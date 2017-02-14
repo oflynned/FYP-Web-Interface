@@ -1,101 +1,59 @@
-<meta charset="utf-8">
-
-<head>
-    <style>
-        .axis path,
-        .axis line {
-            fill: none;
-            stroke: #000;
-            shape-rendering: crispEdges;
-        }
-    </style>
-</head>
-
-<body>
-
-<script src="http://d3js.org/d3.v3.min.js"></script>
-
+<svg width="960" height="500"></svg>
+<script src="https://d3js.org/d3.v4.min.js"></script>
 <script>
-    // set the dimensions of the canvas
-    var margin = {top: 20, right: 20, bottom: 70, left: 40},
-            width = 600 - margin.left - margin.right,
-            height = 300 - margin.top - margin.bottom;
 
+    var svg = d3.select("svg"),
+            margin = {top: 20, right: 20, bottom: 30, left: 50},
+            width = +svg.attr("width") - margin.left - margin.right,
+            height = +svg.attr("height") - margin.top - margin.bottom,
+            g = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    // set the ranges
-    var x = d3.scale.ordinal().rangeRoundBands([0, width], .05);
+    var parseTime = d3.timeParse("%d-%b-%y");
 
-    var y = d3.scale.linear().range([height, 0]);
+    var x = d3.scaleTime()
+            .rangeRound([0, width]);
 
-    // define the axis
-    var xAxis = d3.svg.axis()
-            .scale(x)
-            .orient("bottom");
+    var y = d3.scaleLinear()
+            .rangeRound([height, 0]);
 
-    var yAxis = d3.svg.axis()
-            .scale(y)
-            .orient("left")
-            .ticks(10);
+    var line = d3.line()
+            .x(function(d) { return x(d.date); })
+            .y(function(d) { return y(d.close); });
 
-    // add the SVG element
-    var svg = d3.select("body").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform",
-                    "translate(" + margin.left + "," + margin.top + ")");
+    d3.json("{{url}}", function(d) {
+        d.date = parseTime(d.date);
+        d.close = +d.close;
+        return d;
+    }, function(error, data) {
+        if (error) throw error;
 
-    // load the data
-    d3.json("{{name}}.json", function (error, data) {
+        x.domain(d3.extent(data, function(d) { return d.date; }));
+        y.domain(d3.extent(data, function(d) { return d.close; }));
 
-        // scale the range of the data
-        x.domain(data.map(function (d) {
-            return d.x;
-        }));
-        y.domain([0, d3.max(data, function (d) {
-            return d.y;
-        })]);
-
-        // add axis
-        svg.append("g")
-                .attr("class", "x axis")
+        g.append("g")
                 .attr("transform", "translate(0," + height + ")")
-                .call(xAxis)
-                .selectAll("text")
-                .style("text-anchor", "end")
-                .attr("dx", "-.8em")
-                .attr("dy", "-.55em")
-                .attr("transform", "rotate(-90)");
+                .call(d3.axisBottom(x))
+                .select(".domain")
+                .remove();
 
-        svg.append("g")
-                .attr("class", "y axis")
-                .call(yAxis)
+        g.append("g")
+                .call(d3.axisLeft(y))
                 .append("text")
+                .attr("fill", "#000")
                 .attr("transform", "rotate(-90)")
-                .attr("y", 5)
-                .attr("dy", ".71em")
-                .style("text-anchor", "end")
-                .text("Frequency");
+                .attr("y", 6)
+                .attr("dy", "0.71em")
+                .attr("text-anchor", "end")
+                .text("Price ($)");
 
-
-        // Add bar chart
-        svg.selectAll("bar")
-                .data(data)
-                .enter().append("rect")
-                .attr("class", "bar")
-                .attr("x", function (d) {
-                    return x(d.x);
-                })
-                .attr("width", x.rangeBand())
-                .attr("y", function (d) {
-                    return y(d.y);
-                })
-                .attr("height", function (d) {
-                    return height - y(d.y);
-                });
-
+        g.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", "steelblue")
+                .attr("stroke-linejoin", "round")
+                .attr("stroke-linecap", "round")
+                .attr("stroke-width", 1.5)
+                .attr("d", line);
     });
 
 </script>
-
-</body>

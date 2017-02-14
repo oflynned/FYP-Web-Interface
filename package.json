@@ -7,13 +7,18 @@
   },
   "dependencies": {
     "body-parser": "~1.16.0",
+    "chart.js": "^2.5.0",
+    "chartjs": "^0.3.24",
     "cookie-parser": "~1.4.3",
+    "d3": "latest",
     "debug": "~2.6.0",
     "express": "~4.14.1",
     "hbs": "~4.0.1",
+    "mongodb": "latest",
+    "mongojs": "^2.4.0",
+    "mongoose": "latest",
     "morgan": "~1.7.0",
     "promise": "latest",
-    "serve-favicon": "~2.3.2",
-    "d3": "latest"
+    "serve-favicon": "~2.3.2"
   }
 }
