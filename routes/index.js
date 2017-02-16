@@ -113,13 +113,15 @@ router.get("/committers-graph/:repo", function (req, res) {
     });
 });
 
-router.get("/commit-frequency-graph/:repo", function (req, res) {
+router.get("/commit-frequency-graph/:repo/:epoch", function (req, res) {
     let repo = req.params["repo"];
     let collection = req.params["collection"];
+    let epoch = req.params["epoch"];
 
     res.render("commit-frequency", {
         repo: repo,
-        collection: collection
+        collection: collection,
+        epoch: epoch
     });
 });
 

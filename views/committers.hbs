@@ -14,11 +14,11 @@
             }).responseText;
 
             data = JSON.parse(data);
-            var headings = [['ID', 'Time', 'Commits', 'Temperature']];
+            var headings = [['ID', 'Join Time', 'Commits', 'Temperature', 'Size']];
             var grooming = [];
 
             data.forEach(function (d) {
-                var item = [d["author"], new Date(d["time"]), 1, 1];
+                var item = [d["author"], new Date(d["time"]), 1, 1, 1];
                 var found = false;
 
                 if(grooming.length == 0) {
@@ -29,7 +29,7 @@
                         if(item[0] == commit[0]) {
                             found = true;
                             commit[2] += 1;
-                            commit[3] = commit[2]
+                            commit[4] = commit[3] = commit[2]
                         }
                     });
 
@@ -41,13 +41,12 @@
 
             for(var item in grooming)
                 headings.push(grooming[item]);
-            console.log(headings);
 
             var data = new google.visualization.arrayToDataTable(headings);
             var options = {
                 hAxis: {title: 'Time of Joining Repo'},
                 vAxis: {title: 'Commits'},
-                bubble: {textStyle: {fontSize: 11}},
+                bubble: {textStyle: {fontSize: 10}},
                 colorAxis: {colors: ['red', 'green']}
             };
 

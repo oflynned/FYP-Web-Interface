@@ -11,9 +11,7 @@ let index = require('./routes/index');
 let users = require('./routes/users');
 
 let app = express();
-let hbs = require("hbs");
-
-let d3 = require("d3");
+let hbs = require('hbs');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -48,8 +46,62 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
-hbs.registerHelper("generateLineGraph", function (json) {
+hbs.registerHelper('compare', function (lvalue, operator, rvalue, options) {
+    let operators, result;
+
+    if (arguments.length < 3) {
+        throw new Error("Handlebars Helper 'compare' needs 2 parameters");
+    }
+
+    if (options === undefined) {
+        options = rvalue;
+        rvalue = operator;
+        operator = "===";
+    }
+
+    operators = {
+        '==': function (l, r) {
+            return l == r;
+        },
+        '===': function (l, r) {
+            return l === r;
+        },
+        '!=': function (l, r) {
+            return l != r;
+        },
+        '!==': function (l, r) {
+            return l !== r;
+        },
+        '<': function (l, r) {
+            return l < r;
+        },
+        '>': function (l, r) {
+            return l > r;
+        },
+        '<=': function (l, r) {
+            return l <= r;
+        },
+        '>=': function (l, r) {
+            return l >= r;
+        },
+        'typeof': function (l, r) {
+            return typeof l == r;
+        }
+    };
+
+    if (!operators[operator]) {
+        throw new Error("Handlerbars Helper 'compare' doesn't know the operator " + operator);
+    }
+
+    result = operators[operator](lvalue, rvalue);
+
+    if (result) {
+        return options.fn(this);
+    } else {
+        return options.inverse(this);
+    }
 
 });
+
 
 module.exports = app;

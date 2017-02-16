@@ -18,36 +18,47 @@
             var grooming = [];
 
             data.forEach(function (d) {
-                var item = [new Date(d["time"]).getDay(), 1];
+                var item = [new Date(d["time"]), 1];
                 var found = false;
 
-                if(grooming.length == 0) {
+                {{#compare epoch "==" "hour"}}
+                    item[0] = item[0].getHours();
+                {{/compare}}
+                {{#compare epoch "==" "day"}}
+                    item[0] = item[0].getDay();
+                {{/compare}}
+                {{#compare epoch "==" "month"}}
+                    item[0] = item[0].getMonth();
+                {{/compare}}
+                {{#compare epoch "==" "date"}}
+                    item[0] = item[0].toDateString();
+                {{/compare}}
+
+                if (grooming.length == 0) {
                     grooming.push(item);
                 } else {
-                    grooming.forEach(function(commit) {
+                    grooming.forEach(function (commit) {
                         // committed more than once
-                        if(item[0] === commit[0]) {
+                        if (item[0] === commit[0]) {
                             found = true;
                             commit[1] += 1;
                         }
                     });
 
-                    if(!found) {
+                    if (!found) {
                         grooming.push(item);
                     }
                 }
             });
 
-            grooming.sort(function (a, b) {
-                return a[0] > b[0] ? 1 : -1;
-            });
+            {{#compare epoch "!=" "date"}}
+                grooming.sort(function (a, b) {
+                    return a[0] > b[0] ? 1 : -1;
+                });
+            {{/compare}}
 
-            for(var item in grooming) {
-                console.log(grooming[item]);
+            for (var item in grooming)
                 headings.push(grooming[item]);
-            }
-
-            console.log(headings);
 
             var data = new google.visualization.arrayToDataTable(headings);
             var options = {
