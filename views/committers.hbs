@@ -1,0 +1,62 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages': ['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var data = $.ajax({
+                url: "http://localhost:3000/committers-data/{{repo}}",
+                dataType: "JSON",
+                async: false
+            }).responseText;
+
+            data = JSON.parse(data);
+            var headings = [['ID', 'Time', 'Commits', 'Temperature']];
+            var grooming = [];
+
+            data.forEach(function (d) {
+                var item = [d["author"], new Date(d["time"]), 1, 1];
+                var found = false;
+
+                if(grooming.length == 0) {
+                    grooming.push(item);
+                } else {
+                    grooming.forEach(function(commit) {
+                        // committed more than once
+                        if(item[0] == commit[0]) {
+                            found = true;
+                            commit[2] += 1;
+                            commit[3] = commit[2]
+                        }
+                    });
+
+                    if(!found) {
+                        grooming.push(item);
+                    }
+                }
+            });
+
+            for(var item in grooming)
+                headings.push(grooming[item]);
+            console.log(headings);
+
+            var data = new google.visualization.arrayToDataTable(headings);
+            var options = {
+                hAxis: {title: 'Time of Joining Repo'},
+                vAxis: {title: 'Commits'},
+                bubble: {textStyle: {fontSize: 11}},
+                colorAxis: {colors: ['red', 'green']}
+            };
+
+            var chart = new google.visualization.BubbleChart(document.getElementById('series_chart_div'));
+            chart.draw(data, options);
+        }
+    </script>
+</head>
+<body>
+<div id="series_chart_div" style="width: 1920px; height: 1080px"></div>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages': ['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var data = $.ajax({
+                url: "http://localhost:3000/avg-complexity-data/{{repo}}",
+                dataType: "JSON",
+                async: false
+            }).responseText;
+
+            data = JSON.parse(data);
+            var groomed = [['Time', 'Complexity']];
+
+            data.forEach(function (d) {
+                var item = [new Date(d["commit_details"][0]["time"]), parseFloat(d["avg_complexity"])];
+                groomed.push(item);
+            });
+
+            console.log(groomed);
+
+            var data = new google.visualization.arrayToDataTable(groomed);
+            var options = {
+                title: 'Average Complexity',
+                curveType: 'function',
+                legend: {position: 'bottom'}
+            };
+
+            // Instantiate and draw our chart, passing in some options.
+            var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+            chart.draw(data, options);
+        }
+    </script>
+</head>
+<body>
+<div id="curve_chart" style="width: 100%; height: 90vh"></div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages': ['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var data = $.ajax({
+                url: "http://localhost:3000/committers-data/{{repo}}",
+                dataType: "JSON",
+                async: false
+            }).responseText;
+
+            data = JSON.parse(data);
+            var headings = [['Time', 'Commits']];
+            var grooming = [];
+
+            data.forEach(function (d) {
+                var item = [new Date(d["time"]).getDay(), 1];
+                var found = false;
+
+                if(grooming.length == 0) {
+                    grooming.push(item);
+                } else {
+                    grooming.forEach(function(commit) {
+                        // committed more than once
+                        if(item[0] === commit[0]) {
+                            found = true;
+                            commit[1] += 1;
+                        }
+                    });
+
+                    if(!found) {
+                        grooming.push(item);
+                    }
+                }
+            });
+
+            grooming.sort(function (a, b) {
+                return a[0] > b[0] ? 1 : -1;
+            });
+
+            for(var item in grooming) {
+                console.log(grooming[item]);
+                headings.push(grooming[item]);
+            }
+
+            console.log(headings);
+
+            var data = new google.visualization.arrayToDataTable(headings);
+            var options = {
+                hAxis: {title: 'Time'},
+                vAxis: {title: 'Commits'},
+                curveType: 'function'
+            };
+
+            var chart = new google.visualization.LineChart(document.getElementById('series_chart_div'));
+            chart.draw(data, options);
+        }
+    </script>
+</head>
+<body>
+<div id="series_chart_div" style="width: 1920px; height: 1080px"></div>
+</body>
+</html>
