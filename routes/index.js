@@ -38,7 +38,7 @@ router.get("/cyclomatic-complexity-data/:repo", function (req, res) {
         db.collection("cyclomatic_complexity").aggregate({
             $lookup: {
                 from: "commits",
-                localField: "commit_head",
+                localField: "commit",
                 foreignField: "head",
                 as: "commit_details"
             }
@@ -63,9 +63,63 @@ router.get("/maintainability-data/:repo", function (req, res) {
     });
 });
 
+
+router.get("/raw-data/:repo", function (req, res) {
+    mongo.connect('mongodb://localhost:27017/' + req.params["repo"], function (err, db) {
+        db.collection("raw_metrics").aggregate([
+            {
+                $lookup: {
+                    from: "maintainability",
+                    localField: "commit",
+                    foreignField: "commit",
+                    as: "maintainability"
+                }
+            },
+            {
+                $lookup: {
+                    from: "commits",
+                    localField: "commit",
+                    foreignField: "head",
+                    as: "commit_details"
+                }
+            }], function (err, result) {
+            res.json(result);
+        });
+    });
+});
+
+router.get("/raw-data/:repo/:commit", function (req, res) {
+    mongo.connect('mongodb://localhost:27017/' + req.params["repo"], function (err, db) {
+        db.collection("raw_metrics").aggregate([
+            {
+                $match: {
+                    'commit': req.params["commit"]
+                }
+            },
+            {
+                $lookup: {
+                    from: "maintainability",
+                    localField: "commit",
+                    foreignField: "commit",
+                    as: "maintainability"
+                }
+            },
+            {
+                $lookup: {
+                    from: "commits",
+                    localField: "commit",
+                    foreignField: "head",
+                    as: "commit_details"
+                }
+            }], function (err, result) {
+            res.json(result);
+        });
+    });
+});
+
 router.get("/committers-data/:repo", function (req, res) {
     mongo.connect('mongodb://localhost:27017/' + req.params["repo"], function (err, db) {
-        db.collection("commits").find({}).toArray(function (err, result) {
+        db.collection("commits").find().toArray(function (err, result) {
             res.json(result);
         });
     });

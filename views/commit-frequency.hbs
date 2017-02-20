@@ -63,7 +63,7 @@
             var data = new google.visualization.arrayToDataTable(headings);
             var options = {
                 hAxis: {title: 'Time'},
-                vAxis: {title: 'Commits'},
+                vAxis: {minValue: 0, title: 'Commits'},
                 curveType: 'function'
             };
 
