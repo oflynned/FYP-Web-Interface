@@ -1,0 +1,67 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages': ['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var data = $.ajax({
+                url: "http://localhost:3000/raw-data/{{repo}}",
+                dataType: "JSON",
+                async: false
+            }).responseText;
+
+            data = JSON.parse(data);
+            var groomed = [['Time', 'LOC', 'Change in LOC']];
+
+            var i = 0;
+            data.forEach(function (d) {
+
+                var currLOC = 0;
+                var commit = new Date(d["commit_details"][0]["time"]);
+
+                // var user = d["commit_details"][0]["author"];
+
+                for (var item in d["files"])
+                    currLOC += d["files"][item]["loc"];
+
+                if(i == 0) {
+                    groomed.push([commit, currLOC, currLOC]);
+                    //console.log(i + " " + parseInt(currLOC) + " " + 0)
+                } else {
+                    var changeInLOC = currLOC - groomed[i][1];
+                    groomed.push([commit, currLOC, changeInLOC]);
+                    //console.log(i + " " + currLOC + " " + changeInLOC);
+                }
+
+                i++;
+            });
+
+            var dataVis = new google.visualization.arrayToDataTable(groomed);
+            var options = {
+                title: 'LOC & LOC change over time for {{repo}}',
+                legend: {position: 'bottom'},
+                series: {
+                    0: {axis: 'LOC'},
+                    1: {axis: 'Complexity'}
+                },
+                axes: {
+                    y: {
+                        LOC: {label: 'LOC (Lines)'},
+                        Complexity: {label: 'Complexity (Halstead)'}
+                    }
+                }
+            };
+
+            // Instantiate and draw our chart, passing in some options.
+            var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+            chart.draw(dataVis, options);
+        }
+    </script>
+</head>
+<body>
+<div id="curve_chart" style="width: 90vw; height: 90vh"></div>
+</body>
+</html>

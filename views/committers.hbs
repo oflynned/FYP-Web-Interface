@@ -7,17 +7,6 @@
         google.charts.setOnLoadCallback(init);
 
         function init() {
-            var options = {
-                hAxis: {title: 'Time of Joining Repo'},
-                vAxis: {minValue: 0, title: 'Commits'},
-                bubble: {textStyle: {fontSize: 10}},
-                colorAxis: {colors: ['red', 'green']},
-                animation: {
-                    duration: 2000,
-                    easing: 'out',
-                    startup: true
-                }
-            };
 
             var data = $.ajax({
                 url: "http://localhost:3000/committers-data/{{repo}}",
@@ -54,6 +43,19 @@
             for (var item in grooming)
                 headings.push(grooming[item]);
 
+            var options = {
+                title: "Join time of "+ (headings.length - 1) + " contributors for {{repo}} over " + data.length + " commits",
+                hAxis: {title: 'Time of Joining Repo'},
+                vAxis: {minValue: 0, title: 'Commits'},
+                bubble: {textStyle: {fontSize: 10}},
+                colorAxis: {colors: ['red', 'green']},
+                animation: {
+                    duration: 2000,
+                    easing: 'out',
+                    startup: true
+                }
+            };
+
             var data = new google.visualization.arrayToDataTable(headings);
 
             function drawChart() {
@@ -66,6 +68,6 @@
     </script>
 </head>
 <body>
-<div id="series_chart_div" style="width: 1920px; height: 1080px"></div>
+<div id="series_chart_div" style="width: 90vw; height: 90vh"></div>
 </body>
 </html>

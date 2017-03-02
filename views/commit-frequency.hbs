@@ -63,8 +63,7 @@
             var data = new google.visualization.arrayToDataTable(headings);
             var options = {
                 hAxis: {title: 'Time'},
-                vAxis: {minValue: 0, title: 'Commits'},
-                curveType: 'function'
+                vAxis: {minValue: 0, title: 'Commits'}
             };
 
             var chart = new google.visualization.LineChart(document.getElementById('series_chart_div'));
@@ -73,6 +72,6 @@
     </script>
 </head>
 <body>
-<div id="series_chart_div" style="width: 1920px; height: 1080px"></div>
+<div id="series_chart_div" style="width: 90vw; height: 90vh"></div>
 </body>
 </html>

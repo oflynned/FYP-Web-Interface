@@ -67,6 +67,16 @@ router.get("/maintainability-data/:repo", function (req, res) {
 router.get("/raw-data/:repo", function (req, res) {
     mongo.connect('mongodb://localhost:27017/' + req.params["repo"], function (err, db) {
         db.collection("raw_metrics").aggregate([
+
+            {
+                $lookup: {
+                    from: "average_complexity",
+                    localField: "commit",
+                    foreignField: "commit_head",
+                    as: "average_complexity"
+                }
+            },
+            /*
             {
                 $lookup: {
                     from: "maintainability",
@@ -75,6 +85,14 @@ router.get("/raw-data/:repo", function (req, res) {
                     as: "maintainability"
                 }
             },
+            {
+                $lookup: {
+                    from: "cyclomatic_complexity",
+                    localField: "commit",
+                    foreignField: "commit",
+                    as: "complexity"
+                }
+            },*/
             {
                 $lookup: {
                     from: "commits",
@@ -102,6 +120,22 @@ router.get("/raw-data/:repo/:commit", function (req, res) {
                     localField: "commit",
                     foreignField: "commit",
                     as: "maintainability"
+                }
+            },
+            {
+                $lookup: {
+                    from: "average_complexity",
+                    localField: "commit",
+                    foreignField: "commit_head",
+                    as: "average_complexity"
+                }
+            },
+            {
+                $lookup: {
+                    from: "cyclomatic_complexity",
+                    localField: "commit",
+                    foreignField: "commit",
+                    as: "cyclomatic_complexity"
                 }
             },
             {
@@ -147,11 +181,52 @@ router.get("/complexity-graph/:repo", function (req, res) {
     });
 });
 
-router.get("/maintainability-graph/:repo", function (req, res) {
+router.get("/loc-graph/:repo", function (req, res) {
     let repo = req.params["repo"];
     let collection = req.params["collection"];
 
-    res.render("maintainability", {
+    res.render("loc", {
+        repo: repo,
+        collection: collection
+    });
+});
+
+router.get("/complexity-loc-graph/:repo", function (req, res) {
+    let repo = req.params["repo"];
+    let collection = req.params["collection"];
+
+    res.render("loc_v_complexity", {
+        repo: repo,
+        collection: collection
+    });
+});
+
+router.get("/complexity-loc-change-graph/:repo", function (req, res) {
+    let repo = req.params["repo"];
+    let collection = req.params["collection"];
+
+    res.render("loc_change_v_complexity", {
+        repo: repo,
+        collection: collection
+    });
+});
+
+
+router.get("/complexity-loc-bubble-graph/:repo", function (req, res) {
+    let repo = req.params["repo"];
+    let collection = req.params["collection"];
+
+    res.render("loc_complexity_user_bubble", {
+        repo: repo,
+        collection: collection
+    });
+});
+
+router.get("/complexity-loc-scatter-graph/:repo", function (req, res) {
+    let repo = req.params["repo"];
+    let collection = req.params["collection"];
+
+    res.render("loc_complexity_user_scatter", {
         repo: repo,
         collection: collection
     });

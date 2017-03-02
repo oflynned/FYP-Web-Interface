@@ -27,8 +27,7 @@
 
             var data = new google.visualization.arrayToDataTable(groomed);
             var options = {
-                title: 'Average Complexity',
-                curveType: 'function',
+                title: 'Average Complexity for {{repo}}',
                 legend: {position: 'bottom'}
             };
 
@@ -39,6 +38,6 @@
     </script>
 </head>
 <body>
-<div id="curve_chart" style="width: 100%; height: 90vh"></div>
+<div id="curve_chart" style="width: 90vw; height: 90vh"></div>
 </body>
 </html>
