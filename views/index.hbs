@@ -1,0 +1,82 @@
+<head>
+    <!-- gimme dat ajax -->
+    <script src="https://code.jquery.com/jquery-3.1.1.js"
+            integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA=" crossorigin="anonymous"></script>
+</head>
+
+<nav class="nav has-shadow">
+    <div class="container">
+        <div class="nav-left">
+            <a class="nav-item">
+                Final Year Project
+            </a>
+        </div>
+        <div class="nav-right">
+            <a class="nav-item is-tab is-active" href="/">Code Analysis</a>
+            <a class="nav-item is-tab" href="http://www.github.com/oflynned/FYP" target="_blank">GitHub</a>
+            <a class="nav-item is-tab" href="/about">About</a>
+        </div>
+    </div>
+</nav>
+
+<section class="hero is-primary is-medium">
+    <div class="hero-body">
+        <div class="container">
+            <h1 class="title">
+                Mine a GitHub Python Repo
+            </h1>
+            <h2 class="subtitle">
+                Jobs will be aggregated over time as they progress.
+            </h2>
+            <div class="control is-grouped">
+                <p class="control has-icon is-expanded">
+                    <input class="input" type="text" name="url"
+                           placeholder="http://www.github.com/<username>/<repo>">
+                    <span class="icon is-medium">
+                            <i class="fa fa-github"></i>
+                        </span>
+                </p>
+                <p class="control">
+                    <button class="button is-white is-outlined submit-job">
+                        Start Job
+                    </button>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="hero-foot">
+        <nav class="tabs is-boxed is-fullwidth">
+            <div class="container">
+                <ul>
+                    <li class="is-active pipeline-btn"><a>Pipeline</a></li>
+                    <li class="harvested-btn"><a>Harvested</a></li>
+                    <li class="raw-data-btn"><a>Raw Data</a></li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</section>
+
+<div class="progression-area">
+    <!-- dynamically updated via jQuery ajax -->
+    <!-- look in pipeline.js, ... etc for implementation -->
+</div>
+
+<footer class="footer">
+    <div class="container">
+        <div class="content has-text-centered">
+            <p>
+                Made for easier &amp; fancier job dispatching.
+            </p>
+            <p>
+                Edmond O' Flynn &copy; 2017
+            </p>
+            <div id="social">
+                <iframe class="github-btn"
+                        src="https://ghbtns.com/github-btn.html?user=oflynned&amp;repo=FYP&amp;type=star&amp;count=true"
+                        allowtransparency="true" frameborder="0" scrolling="0" width="105px" height="20px"></iframe>
+            </div>
+        </div>
+    </div>
+</footer>
+

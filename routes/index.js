@@ -254,4 +254,29 @@ router.get("/commit-frequency-graph/:repo/:epoch", function (req, res) {
     });
 });
 
+router.get("/", function (req, res) {
+    res.render("index", {title: "Code Analysis FYP"})
+});
+
+router.get("/about", function (req, res) {
+    res.render("about", {title: "About"})
+});
+
+router.post("/submit-job", function (req, res) {
+    console.log(req.body);
+    res.json({status: "success"});
+});
+
+router.get("/get-jobs", function (req, res) {
+    /*let repo = req.params["repo"];
+
+    mongo.connect('mongodb://localhost:27017/' + repo, function (err, db) {
+        let collection = db.collection(metricsCollection);
+        collection.find().toArray(function (err, results) {
+            res.json(results);
+            db.close();
+        });
+    });*/
+});
+
 module.exports = router;
