@@ -30,7 +30,7 @@
             </h2>
             <div class="control is-grouped">
                 <p class="control has-icon is-expanded">
-                    <input class="input" type="text" name="url"
+                    <input class="input job-input" type="text" name="url"
                            placeholder="http://www.github.com/<username>/<repo>">
                     <span class="icon is-medium">
                             <i class="fa fa-github"></i>
@@ -48,16 +48,16 @@
         <nav class="tabs is-boxed is-fullwidth">
             <div class="container">
                 <ul>
-                    <li class="is-active pipeline-btn"><a>Pipeline</a></li>
-                    <li class="harvested-btn"><a>Harvested</a></li>
-                    <li class="raw-data-btn"><a>Raw Data</a></li>
+                    <li class="is-active pipeline-btn"><a href="#pipeline">Pipeline</a></li>
+                    <li class="harvested-btn"><a href="#harvested">Harvested</a></li>
+                    <li class="raw-data-btn"><a href="#raw-data">Raw Data</a></li>
                 </ul>
             </div>
         </nav>
     </div>
 </section>
 
-<div class="progression-area">
+<div class="progression-area" style="min-height: auto;">
     <!-- dynamically updated via jQuery ajax -->
     <!-- look in pipeline.js, ... etc for implementation -->
 </div>

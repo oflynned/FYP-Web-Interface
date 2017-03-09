@@ -5,9 +5,13 @@ let router = express.Router();
 let assert = require("assert");
 let mongo = require('mongodb').MongoClient;
 
+let cmd = require('node-cmd');
+
 router.get('/metrics/:repo/:collection', function (req, res) {
-    let repo = req.params["repo"];
-    let metricsCollection = req.params["collection"];
+    console.log(req.body);
+
+    let repo = req.body["repo"];
+    let metricsCollection = req.body["collection"];
 
     mongo.connect('mongodb://localhost:27017/' + repo, function (err, db) {
         let collection = db.collection(metricsCollection);
@@ -77,22 +81,22 @@ router.get("/raw-data/:repo", function (req, res) {
                 }
             },
             /*
-            {
-                $lookup: {
-                    from: "maintainability",
-                    localField: "commit",
-                    foreignField: "commit",
-                    as: "maintainability"
-                }
-            },
-            {
-                $lookup: {
-                    from: "cyclomatic_complexity",
-                    localField: "commit",
-                    foreignField: "commit",
-                    as: "complexity"
-                }
-            },*/
+             {
+             $lookup: {
+             from: "maintainability",
+             localField: "commit",
+             foreignField: "commit",
+             as: "maintainability"
+             }
+             },
+             {
+             $lookup: {
+             from: "cyclomatic_complexity",
+             localField: "commit",
+             foreignField: "commit",
+             as: "complexity"
+             }
+             },*/
             {
                 $lookup: {
                     from: "commits",
@@ -152,6 +156,14 @@ router.get("/raw-data/:repo/:commit", function (req, res) {
 });
 
 router.get("/committers-data/:repo", function (req, res) {
+    mongo.connect('mongodb://localhost:27017/' + req.params["repo"], function (err, db) {
+        db.collection("commits").find().toArray(function (err, result) {
+            res.json(result);
+        });
+    });
+});
+
+router.get("/repo-data/:repo", function (req, res) {
     mongo.connect('mongodb://localhost:27017/' + req.params["repo"], function (err, db) {
         db.collection("commits").find().toArray(function (err, result) {
             res.json(result);
@@ -263,20 +275,42 @@ router.get("/about", function (req, res) {
 });
 
 router.post("/submit-job", function (req, res) {
-    console.log(req.body);
+    let url = req.body["url"];
+    url = url.replace("http://www.github.com/", "");
+    url = url.split("/");
+    let account = url[0];
+    let repo = url[1];
+
+    cmd.get(
+        'cd ../FYP; ./main.py ' + account + " " + repo,
+        function (output) {
+            console.log(output)
+        }
+    );
+
     res.json({status: "success"});
 });
 
 router.get("/get-jobs", function (req, res) {
-    /*let repo = req.params["repo"];
+    let status = req.query["status"];
 
-    mongo.connect('mongodb://localhost:27017/' + repo, function (err, db) {
-        let collection = db.collection(metricsCollection);
-        collection.find().toArray(function (err, results) {
-            res.json(results);
-            db.close();
-        });
-    });*/
+    mongo.connect('mongodb://localhost:27017/jobs', function (err, db_repo) {
+        if (status == "pipeline") {
+            db_repo.collection("repos").find().toArray(function (err, data) {
+                let inProgress = [];
+                for(let repo in data)
+                    if(data[repo]["iteration"] < data[repo]["max_iterations"])
+                        inProgress.push(data[repo]);
+
+                console.log(inProgress);
+                res.json(inProgress);
+            });
+        } else if (status == "harvested") {
+            // show completed jobs
+        } else if (status == "raw-data") {
+            // show appropriate db & collection json
+        }
+    });
 });
 
 module.exports = router;
