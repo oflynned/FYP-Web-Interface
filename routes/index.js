@@ -33,6 +33,7 @@ router.get("/avg-complexity-data/:repo", function (req, res) {
             }
         }, function (err, result) {
             res.json(result);
+            db.close();
         });
     });
 });
@@ -48,6 +49,7 @@ router.get("/cyclomatic-complexity-data/:repo", function (req, res) {
             }
         }, function (err, result) {
             res.json(result);
+            db.close();
         });
     });
 });
@@ -63,6 +65,7 @@ router.get("/maintainability-data/:repo", function (req, res) {
             }
         }, function (err, result) {
             res.json(result);
+            db.close();
         });
     });
 });
@@ -106,6 +109,7 @@ router.get("/raw-data/:repo", function (req, res) {
                 }
             }], function (err, result) {
             res.json(result);
+            db.close();
         });
     });
 });
@@ -151,6 +155,7 @@ router.get("/raw-data/:repo/:commit", function (req, res) {
                 }
             }], function (err, result) {
             res.json(result);
+            db.close();
         });
     });
 });
@@ -159,6 +164,7 @@ router.get("/committers-data/:repo", function (req, res) {
     mongo.connect('mongodb://localhost:27017/' + req.params["repo"], function (err, db) {
         db.collection("commits").find().toArray(function (err, result) {
             res.json(result);
+            db.close();
         });
     });
 });
@@ -167,6 +173,7 @@ router.get("/repo-data/:repo", function (req, res) {
     mongo.connect('mongodb://localhost:27017/' + req.params["repo"], function (err, db) {
         db.collection("commits").find().toArray(function (err, result) {
             res.json(result);
+            db.close();
         });
     });
 });
@@ -276,7 +283,7 @@ router.get("/about", function (req, res) {
 
 router.post("/submit-job", function (req, res) {
     let url = req.body["url"];
-    url = url.replace("http://www.github.com/", "");
+    url = url.split(".com/").pop();
     url = url.split("/");
     let account = url[0];
     let repo = url[1];
@@ -298,19 +305,34 @@ router.get("/get-jobs", function (req, res) {
         if (status == "pipeline") {
             db_repo.collection("repos").find().toArray(function (err, data) {
                 let inProgress = [];
-                for(let repo in data)
-                    if(data[repo]["iteration"] < data[repo]["max_iterations"])
+                for (let repo in data)
+                    if (data[repo]["iteration"] < data[repo]["max_iterations"])
                         inProgress.push(data[repo]);
 
-                console.log(inProgress);
                 res.json(inProgress);
+                db_repo.close();
             });
         } else if (status == "harvested") {
-            // show completed jobs
+            db_repo.collection("repos").find().toArray(function (err, data) {
+                let inProgress = [];
+                for (let repo in data)
+                    if (data[repo]["iteration"] >= data[repo]["max_iterations"])
+                        inProgress.push(data[repo]);
+
+                res.json(inProgress);
+                db_repo.close();
+            });
         } else if (status == "raw-data") {
-            // show appropriate db & collection json
+            db_repo.collection("repos").find().toArray(function (err, data) {
+                res.json(data);
+                db_repo.close();
+            });
         }
     });
+});
+
+router.get('/:account/:repo', function (req, res) {
+
 });
 
 module.exports = router;

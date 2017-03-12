@@ -2,18 +2,10 @@
  * Created by ed on 09/03/2017.
  */
 
-let repos = [
-    ["oflynned", "AI-Art"],
-    ["samshadwell", "TrumpScript"],
-    ["joke2k", "faker"],
-    ["Russell91", "pythonpy"],
-    ["ajalt", "fuckitpy"],
-    ["nvbn", "thefuck"],
-    ["binux", "pyspider"],
-    ["scikit-learn", "scikit-learn"],
-    ["pyca", "cryptography"],
-    ["pyca", "pyopenssl"]
-];
+let visualisation_area = $(".visualisation-area");
+let currentTab = ".pipeline-btn";
+let shouldSync = true;
+let timerId = 0;
 
 function Job(job_id, account, repo, iteration, maxIterations) {
     this.job_id = job_id;
@@ -25,17 +17,17 @@ function Job(job_id, account, repo, iteration, maxIterations) {
 
 function generateJob(job) {
     let percentage = getPercentage(job["iteration"], job["maxIterations"]);
-    console.log(parseInt(percentage));
+    let url = "/" + job["account"] + "/" + job["repo"];
 
     return '<div id="' + job["job_id"] + '" class="container" style="margin-top: 2vh; margin-bottom: 2vh;">' +
-        '<h1 class="title is-4">' +
-        'Job &lt;' + job["account"] + '/' + job["repo"] + '&gt;:' +
+        '<h1 class="title is-4">&lt;' +
+        '<a href="' + url + '">' + job["account"] + '/' + job["repo"] + '</a>&gt;' +
         '</h1>' +
         '<h2 class="subtitle is-6">' + percentage + '% ' +
         '(Commit: ' + job["iteration"] + '/' + job["maxIterations"] + ')' +
         '</h2>' +
         '<progress id="#progression-bar" class="progress is-primary" ' +
-        'value="' + parseInt(percentage)+ '" max="100"></progress>' +
+        'value="' + parseInt(percentage) + '" max="100"></progress>' +
         '</div>';
 }
 
@@ -67,63 +59,117 @@ function getPercentage(iteration, maxIterations) {
     return parseFloat(Math.round((iteration / maxIterations) * 100)).toFixed(2);
 }
 
-function addItemToProgression(item) {
-    $(".progression-area").append(item);
+function addItemToVisArea(item) {
+    visualisation_area.append(item);
+}
+
+function setContent(data) {
+    let jobs = [];
+    for (let item in data)
+        jobs.push(new Job(data[item]["id"], data[item]["account"],
+            data[item]["repo_name"], data[item]["iteration"], data[item]["max_iterations"]));
+
+    if (jobs.length == 0) {
+        // no jobs in the pipeline -- notify user accordingly
+        visualisation_area.empty();
+        addItemToVisArea(generateNoJobs())
+    } else {
+        // else add the appropriate jobs and leave it alone
+        visualisation_area.empty();
+        for (let job in jobs) {
+            let jobDOM = generateJob(jobs[job]);
+            addItemToVisArea(jobDOM)
+        }
+    }
+}
+
+function generateTab() {
+    let tabs = "";
+
+    if (currentTab == ".pipeline-btn") {
+        tabs = '<li class="is-active pipeline-btn"><a href="#harvested">Pipeline</li>' +
+            '<li class="harvested-btn"><a href="#harvested">Harvested</a></li>' +
+            '<li class="raw-data-btn"><a href="#raw-data">Raw Data</a></li>'
+    } else if (currentTab == ".harvested-btn") {
+        tabs = '<li class="pipeline-btn"><a href="#pipeline">Pipeline</a></li>' +
+            '<li class="is-active harvested-btn"><a href="#harvested">Harvested</a></li>' +
+            '<li class="raw-data-btn"><a href="#raw-data">Raw Data</a></li>'
+    } else if (currentTab == ".raw-data-btn") {
+        tabs = '<li class="pipeline-btn"><a href="#pipeline">Pipeline</a></li>' +
+            '<li class="harvested-btn"><a href="#harvested">Harvested</a></li>' +
+            '<li class="is-active raw-data-btn"><a href="#raw-data">Raw Data</a></li>'
+    }
+
+    return '<nav class="tabs is-boxed is-fullwidth">' +
+        '<div class="container">' +
+        '<ul>' + tabs + '</ul>' +
+        '</div>' +
+        '</nav>'
+}
+
+function setTab() {
+    let element = $(".hero-foot");
+    element.empty();
+    element.append(generateTab());
 }
 
 $(function () {
     $(document).ready(function () {
-        // TODO keep track of selected tab
+        addItemToVisArea(generateCheck());
 
-        let progression_area = $(".progression-area");
-        addItemToProgression(generateCheck());
+        if (shouldSync) {
+            timerId = window.setInterval(function () {
+                console.log(shouldSync);
 
-        window.setInterval(function () {
-            // if pipeline tab is set, update active jobs
-            $.get("/get-jobs?status=pipeline", function (data) {
-                let jobs = [];
-                for(let item in data)
-                    jobs.push(new Job(data[item]["id"], data[item]["account"],
-                        data[item]["repo_name"], data[item]["iteration"], data[item]["max_iterations"]));
+                // if pipeline tab is set, update active jobs
+                if (currentTab == ".pipeline-btn") {
+                    $.get("/get-jobs?status=pipeline", function (data) {
+                        setContent(data);
+                        if (data.length == 0) {
+                            shouldSync = false;
+                        }
+                    });
+                } else if (currentTab == ".harvested-btn") {
+                    $.get("/get-jobs?status=harvested", function (data) {
+                        setContent(data);
+                        shouldSync = false;
+                    });
+                } else if (currentTab == ".raw-data-btn") {
 
-                if (jobs.length == 0) {
-                    // no jobs in the pipeline -- notify user accordingly
-                    progression_area.empty();
-                    addItemToProgression(generateNoJobs())
-                } else {
-                    // else add jobs for the first time
-                    progression_area.empty();
-                    for (let job in jobs) {
-                        let jobDOM = generateJob(jobs[job]);
-                        addItemToProgression(jobDOM)
-                    }
                 }
-            });
-        }, 1000);
+            }, 1000);
+        }
 
-        $(".submit-job").click(function (e) {
+        $(".submit-job").off("click").on("click", function (e) {
             e.preventDefault();
-
             $.post("/submit-job", {url: $(".job-input").val()});
-
+            shouldSync = true;
         });
 
-        $(".pipeline-btn").click(function (e) {
+        $(".pipeline-btn").off("click").on("click", function (e) {
             e.preventDefault();
 
             // get all jobs in progress from DB
+            currentTab = ".pipeline-btn";
+            shouldSync = true;
+            setTab();
         });
 
-        $(".harvested-btn").click(function (e) {
+        $(".harvested-btn").off("click").on("click", function (e) {
             e.preventDefault();
 
             // get all jobs finished processing from DB
+            currentTab = ".harvested-btn";
+            shouldSync = true;
+            setTab();
         });
 
-        $(".raw-data-btn").click(function (e) {
+        $(".raw-data-btn").off("click").on("click", function (e) {
             e.preventDefault();
 
             // allow json to be rendered to div?
+            currentTab = ".raw-data-btn";
+            setTab();
         });
     });
 });
