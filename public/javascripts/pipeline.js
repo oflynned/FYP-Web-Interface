@@ -15,6 +15,30 @@ function Job(job_id, account, repo, iteration, maxIterations) {
     this.maxIterations = maxIterations;
 }
 
+function generateRawDataJob(job) {
+    let percentage = getPercentage(job["iteration"], job["maxIterations"]);
+    let account = job["account"];
+    let repo = job["repo"];
+    let url = "/" + account + "/" + repo;
+
+    return '<div id="' + job["job_id"] + '" class="container" style="margin-top: 2vh; margin-bottom: 2vh;">' +
+        '<h1 class="title is-4">&lt;' +
+        '<a href="' + url + '">' + job["account"] + '/' + job["repo"] + '</a>' +
+        '&gt;</h1>' +
+        '<h2 class="subtitle is-6">' + percentage + '% ' +
+        '(Commit: ' + job["iteration"] + '/' + job["maxIterations"] + ')' +
+        '</h2>' +
+        '<ul>' +
+        '<li><a href="/cyclomatic-complexity-data/' + repo + '" target="_blank">Cyclomatic Complexity</a></li>' +
+        '<li><a href="/avg-complexity-data/' + repo + '" target="_blank">Average Complexity</a></li>' +
+        '<li><a href="/committers-data/' + repo + '" target="_blank">Committers Data</a></li>' +
+        '<li><a href="/maintainability-data/' + repo + '" target="_blank">Maintainability</a></li>' +
+        '<li><a href="/repo-data/' + repo + '" target="_blank">Repo Data</a></li>' +
+        '<li><a href="/raw-data/' + repo + '" target="_blank">LOC</a></li>' +
+        '</ul>' +
+        '</div>';
+}
+
 function generateJob(job) {
     let percentage = getPercentage(job["iteration"], job["maxIterations"]);
     let url = "/" + job["account"] + "/" + job["repo"];
@@ -26,12 +50,11 @@ function generateJob(job) {
         '<h2 class="subtitle is-6">' + percentage + '% ' +
         '(Commit: ' + job["iteration"] + '/' + job["maxIterations"] + ')' +
         '</h2>' +
-        '<progress id="#progression-bar" class="progress is-primary" ' +
-        'value="' + parseInt(percentage) + '" max="100"></progress>' +
+        '<progress class="progress is-primary" ' + 'value="' + parseInt(percentage) + '" max="100"></progress>' +
         '</div>';
 }
 
-function generateNoJobs(id) {
+function generateNoJobs() {
     return '<div class="container pipeline-empty" style="margin-top: 2vh; margin-bottom: 2vh;">' +
         '<h1 class="title is-4">' +
         'No jobs in the pipeline' +
@@ -39,11 +62,11 @@ function generateNoJobs(id) {
         '<h2 class="subtitle is-6">' +
         'Add a job above in order to aggregate metrics' +
         '</h2>' +
-        '<progress id="#progression-bar" class="progress is-primary" value="0" max="100"></progress>' +
+        '<progress class="progress is-primary" value="0" max="100"></progress>' +
         '</div>'
 }
 
-function generateCheck(id) {
+function generateCheck() {
     return '<div class="container pipeline-empty" style="margin-top: 2vh; margin-bottom: 2vh;">' +
         '<h1 class="title is-4">' +
         'Checking pipeline...' +
@@ -51,7 +74,7 @@ function generateCheck(id) {
         '<h2 class="subtitle is-6">' +
         'Checking if there are any jobs in the pipeline for digestion' +
         '</h2>' +
-        '<progress id="#progression-bar" class="progress is-primary" value="0" max="100"></progress>' +
+        '<progress class="progress is-primary" value="0" max="100"></progress>' +
         '</div>'
 }
 
@@ -68,17 +91,27 @@ function setContent(data) {
     for (let item in data)
         jobs.push(new Job(data[item]["id"], data[item]["account"],
             data[item]["repo_name"], data[item]["iteration"], data[item]["max_iterations"]));
+    jobs = jobs.reverse();
 
-    if (jobs.length == 0) {
-        // no jobs in the pipeline -- notify user accordingly
-        visualisation_area.empty();
-        addItemToVisArea(generateNoJobs())
-    } else {
+    if (currentTab == ".raw-data-btn") {
         // else add the appropriate jobs and leave it alone
         visualisation_area.empty();
         for (let job in jobs) {
-            let jobDOM = generateJob(jobs[job]);
+            let jobDOM = generateRawDataJob(jobs[job]);
             addItemToVisArea(jobDOM)
+        }
+    } else {
+        if (jobs.length == 0) {
+            // no jobs in the pipeline -- notify user accordingly
+            visualisation_area.empty();
+            addItemToVisArea(generateNoJobs())
+        } else {
+            // else add the appropriate jobs and leave it alone
+            visualisation_area.empty();
+            for (let job in jobs) {
+                let jobDOM = generateJob(jobs[job]);
+                addItemToVisArea(jobDOM)
+            }
         }
     }
 }
@@ -124,8 +157,6 @@ $(function () {
             if (currentTab == ".pipeline-btn") {
                 $.get("/get-jobs?status=pipeline", function (data) {
                     setContent(data);
-                    if (data.length == 0) {
-                    }
                 });
             } else if (currentTab == ".harvested-btn") {
                 $.get("/get-jobs?status=harvested", function (data) {
@@ -139,8 +170,7 @@ $(function () {
         }, 1000);
     });
 
-    $("body").off().on("click", function (e) {
-        e.preventDefault();
+    $("body").off().on("click", function () {
         $(".submit-job").off().on("click", function (e) {
             e.preventDefault();
             $.post("/submit-job", {url: $(".job-input").val()});
@@ -159,8 +189,7 @@ $(function () {
 
             // get all jobs finished processing from DB
             currentTab = ".harvested-btn";
-            =
-                setTab();
+            setTab();
         });
 
         $(".raw-data-btn").off().on("click", function (e) {

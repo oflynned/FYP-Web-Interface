@@ -74,7 +74,6 @@ router.get("/maintainability-data/:repo", function (req, res) {
 router.get("/raw-data/:repo", function (req, res) {
     mongo.connect('mongodb://localhost:27017/' + req.params["repo"], function (err, db) {
         db.collection("raw_metrics").aggregate([
-
             {
                 $lookup: {
                     from: "average_complexity",
@@ -83,23 +82,6 @@ router.get("/raw-data/:repo", function (req, res) {
                     as: "average_complexity"
                 }
             },
-            /*
-             {
-             $lookup: {
-             from: "maintainability",
-             localField: "commit",
-             foreignField: "commit",
-             as: "maintainability"
-             }
-             },
-             {
-             $lookup: {
-             from: "cyclomatic_complexity",
-             localField: "commit",
-             foreignField: "commit",
-             as: "complexity"
-             }
-             },*/
             {
                 $lookup: {
                     from: "commits",
