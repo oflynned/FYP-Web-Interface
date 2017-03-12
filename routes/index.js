@@ -295,7 +295,7 @@ router.post("/submit-job", function (req, res) {
         }
     );
 
-    res.json({status: "success"});
+    res.json({status: "submitted job"});
 });
 
 router.get("/get-jobs", function (req, res) {

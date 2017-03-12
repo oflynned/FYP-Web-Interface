@@ -87,7 +87,7 @@ function generateTab() {
     let tabs = "";
 
     if (currentTab == ".pipeline-btn") {
-        tabs = '<li class="is-active pipeline-btn"><a href="#harvested">Pipeline</li>' +
+        tabs = '<li class="is-active pipeline-btn"><a href="#pipeline">Pipeline</li>' +
             '<li class="harvested-btn"><a href="#harvested">Harvested</a></li>' +
             '<li class="raw-data-btn"><a href="#raw-data">Raw Data</a></li>'
     } else if (currentTab == ".harvested-btn") {
@@ -117,54 +117,53 @@ $(function () {
     $(document).ready(function () {
         addItemToVisArea(generateCheck());
 
-        if (shouldSync) {
-            timerId = window.setInterval(function () {
-                console.log(shouldSync);
+        timerId = window.setInterval(function () {
+            console.log(shouldSync);
 
-                // if pipeline tab is set, update active jobs
-                if (currentTab == ".pipeline-btn") {
-                    $.get("/get-jobs?status=pipeline", function (data) {
-                        setContent(data);
-                        if (data.length == 0) {
-                            shouldSync = false;
-                        }
-                    });
-                } else if (currentTab == ".harvested-btn") {
-                    $.get("/get-jobs?status=harvested", function (data) {
-                        setContent(data);
-                        shouldSync = false;
-                    });
-                } else if (currentTab == ".raw-data-btn") {
+            // if pipeline tab is set, update active jobs
+            if (currentTab == ".pipeline-btn") {
+                $.get("/get-jobs?status=pipeline", function (data) {
+                    setContent(data);
+                    if (data.length == 0) {
+                    }
+                });
+            } else if (currentTab == ".harvested-btn") {
+                $.get("/get-jobs?status=harvested", function (data) {
+                    setContent(data);
+                });
+            } else if (currentTab == ".raw-data-btn") {
+                $.get("/get-jobs?status=raw-data", function (data) {
+                    setContent(data);
+                });
+            }
+        }, 1000);
+    });
 
-                }
-            }, 1000);
-        }
-
-        $(".submit-job").off("click").on("click", function (e) {
+    $("body").off().on("click", function (e) {
+        e.preventDefault();
+        $(".submit-job").off().on("click", function (e) {
             e.preventDefault();
             $.post("/submit-job", {url: $(".job-input").val()});
-            shouldSync = true;
         });
 
-        $(".pipeline-btn").off("click").on("click", function (e) {
+        $(".pipeline-btn").off().on("click", function (e) {
             e.preventDefault();
 
             // get all jobs in progress from DB
             currentTab = ".pipeline-btn";
-            shouldSync = true;
             setTab();
         });
 
-        $(".harvested-btn").off("click").on("click", function (e) {
+        $(".harvested-btn").off().on("click", function (e) {
             e.preventDefault();
 
             // get all jobs finished processing from DB
             currentTab = ".harvested-btn";
-            shouldSync = true;
-            setTab();
+            =
+                setTab();
         });
 
-        $(".raw-data-btn").off("click").on("click", function (e) {
+        $(".raw-data-btn").off().on("click", function (e) {
             e.preventDefault();
 
             // allow json to be rendered to div?
