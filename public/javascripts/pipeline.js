@@ -19,15 +19,15 @@ function generateRawDataJob(job) {
     let percentage = getPercentage(job["iteration"], job["maxIterations"]);
     let account = job["account"];
     let repo = job["repo"];
-    let url = "/" + account + "/" + repo;
 
     return '<div id="' + job["job_id"] + '" class="container" style="margin-top: 2vh; margin-bottom: 2vh;">' +
         '<h1 class="title is-4">&lt;' +
-        '<a href="' + url + '">' + job["account"] + '/' + job["repo"] + '</a>' +
+        '<a>' + job["account"] + '/' + job["repo"] + '</a>' +
         '&gt;</h1>' +
         '<h2 class="subtitle is-6">' + percentage + '% ' +
         '(Commit: ' + job["iteration"] + '/' + job["maxIterations"] + ')' +
         '</h2>' +
+        '<progress class="progress is-primary" ' + 'value="' + parseInt(percentage) + '" max="100"></progress>' +
         '<ul>' +
         '<li><a href="/cyclomatic-complexity-data/' + repo + '" target="_blank">Cyclomatic Complexity</a></li>' +
         '<li><a href="/avg-complexity-data/' + repo + '" target="_blank">Average Complexity</a></li>' +
@@ -41,16 +41,29 @@ function generateRawDataJob(job) {
 
 function generateJob(job) {
     let percentage = getPercentage(job["iteration"], job["maxIterations"]);
-    let url = "/" + job["account"] + "/" + job["repo"];
+    let repo = job["repo"];
 
     return '<div id="' + job["job_id"] + '" class="container" style="margin-top: 2vh; margin-bottom: 2vh;">' +
         '<h1 class="title is-4">&lt;' +
-        '<a href="' + url + '">' + job["account"] + '/' + job["repo"] + '</a>&gt;' +
+        '<a>' + job["account"] + '/' + job["repo"] + '</a>&gt;' +
         '</h1>' +
         '<h2 class="subtitle is-6">' + percentage + '% ' +
         '(Commit: ' + job["iteration"] + '/' + job["maxIterations"] + ')' +
         '</h2>' +
         '<progress class="progress is-primary" ' + 'value="' + parseInt(percentage) + '" max="100"></progress>' +
+        '<ul>' +
+        '<li><a href="/committers-graph/' + repo + '" target="_blank">Contributor Join-Time Graph</a></li>' +
+        '<li><a href="/commit-frequency-graph/' + repo +'/hour" target="_blank">Hourly Commit Frequency</a></li>' +
+        '<li><a href="/commit-frequency-graph/' + repo +'/day" target="_blank">Daily Commit Frequency</a></li>' +
+        '<li><a href="/commit-frequency-graph/' + repo +'/month" target="_blank">Monthly Commit Frequency</a></li>' +
+        '<li><a href="/commit-frequency-graph/' + repo +'/date" target="_blank">Annual Commit Frequency</a></li>' +
+        '<li><a href="/avg-graph/' + repo + '" target="_blank">Complexity Over Time</a></li>' +
+        '<li><a href="/cumulative-contributors/' + repo + '" target="_blank">Cumulative Contributor Join</a></li>' +
+        '<li><a href="/avg-complexity-v-contributors/' + repo + '" target="_blank">Complexity v Contributor Join</a></li>' +
+        '<li><a href="/loc-graph/' + repo + '" target="_blank">LOC v Churn</a></li>' +
+        '<li><a href="/complexity-change-loc-graph/' + repo + '" target="_blank">LOC v Complexity</a></li>' +
+        '<li><a href="/complexity-loc-graph/' + repo + '" target="_blank">LOC Change v Complexity</a></li>' +
+        '</ul>' +
         '</div>';
 }
 
@@ -90,10 +103,10 @@ function setContent(data) {
     let jobs = [];
     for (let item in data)
         jobs.push(new Job(data[item]["id"], data[item]["account"],
-            data[item]["repo_name"], data[item]["iteration"], data[item]["max_iterations"]));
+            data[item]["repo_name"], data[item]["iteration"] + 1, data[item]["max_iterations"] + 1));
     jobs = jobs.reverse();
 
-    if (currentTab == ".raw-data-btn") {
+    if (currentTab === ".raw-data-btn") {
         // else add the appropriate jobs and leave it alone
         visualisation_area.empty();
         for (let job in jobs) {
@@ -101,7 +114,7 @@ function setContent(data) {
             addItemToVisArea(jobDOM)
         }
     } else {
-        if (jobs.length == 0) {
+        if (jobs.length === 0) {
             // no jobs in the pipeline -- notify user accordingly
             visualisation_area.empty();
             addItemToVisArea(generateNoJobs())
@@ -119,15 +132,15 @@ function setContent(data) {
 function generateTab() {
     let tabs = "";
 
-    if (currentTab == ".pipeline-btn") {
+    if (currentTab === ".pipeline-btn") {
         tabs = '<li class="is-active pipeline-btn"><a href="#pipeline">Pipeline</li>' +
             '<li class="harvested-btn"><a href="#harvested">Harvested</a></li>' +
             '<li class="raw-data-btn"><a href="#raw-data">Raw Data</a></li>'
-    } else if (currentTab == ".harvested-btn") {
+    } else if (currentTab === ".harvested-btn") {
         tabs = '<li class="pipeline-btn"><a href="#pipeline">Pipeline</a></li>' +
             '<li class="is-active harvested-btn"><a href="#harvested">Harvested</a></li>' +
             '<li class="raw-data-btn"><a href="#raw-data">Raw Data</a></li>'
-    } else if (currentTab == ".raw-data-btn") {
+    } else if (currentTab === ".raw-data-btn") {
         tabs = '<li class="pipeline-btn"><a href="#pipeline">Pipeline</a></li>' +
             '<li class="harvested-btn"><a href="#harvested">Harvested</a></li>' +
             '<li class="is-active raw-data-btn"><a href="#raw-data">Raw Data</a></li>'

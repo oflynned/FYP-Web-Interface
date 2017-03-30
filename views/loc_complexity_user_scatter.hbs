@@ -7,95 +7,83 @@
         google.charts.setOnLoadCallback(drawChart);
 
         function drawChart() {
-            var data = $.ajax({
-                url: "http://localhost:3000/raw-data/{{repo}}",
-                dataType: "JSON",
-                async: false
-            }).responseText;
-
-            data = JSON.parse(data);
-
-            //var groomed = [['Change in LOC', 'Change in Complexity']];
             var groomed = new google.visualization.DataTable();
             groomed.addColumn("number", "Change in LOC");
             groomed.addColumn("number", "Change in Complexity");
-            groomed.addColumn({type:"string", role: "annotation"});
+            groomed.addColumn({type: "string", role: "annotation"});
 
-            var grooming = [];
-            var endGrooming = [];
+            $.getJSON("http://localhost:3000/raw-data/{{repo}}")
+                    .done(function (data) {
+                        var grooming = [];
+                        var endGrooming = [];
 
-            var i = 0;
-            data.forEach(function (d) {
-                var currLOC = 0;
-                var complexity = d["average_complexity"][0]["avg_complexity"];
-                var user = d["commit_details"][0]["author"];
+                        var i = 0;
+                        data.forEach(function (d) {
+                            var currLOC = 0;
+                            var complexity = d["average_complexity"][0]["avg_complexity"];
+                            var user = d["commit_details"][0]["author"];
 
-                for (var item in d["files"])
-                    currLOC += d["files"][item]["loc"];
+                            for (var item in d["files"])
+                                currLOC += d["files"][item]["loc"];
 
-                grooming.push([parseInt(currLOC), parseFloat(complexity), user]);
-                i++;
-            });
+                            grooming.push([parseInt(currLOC), parseFloat(complexity), user]);
+                            i++;
+                        });
 
-            i = 0;
-            grooming.forEach(function (thisItem) {
-                var found = false;
+                        i = 0;
+                        grooming.forEach(function (thisItem) {
+                            var found = false;
 
-                if (endGrooming.length == 0) {
-                    endGrooming.push(grooming[0]);
-                } else {
-                    var lastItem = grooming[i - 1];
-                    var changeInLOC = thisItem[0] - lastItem[0];
-                    var changeInComplexity = thisItem[1] - lastItem[1];
-                    var user = thisItem[2];
+                            if (endGrooming.length === 0) {
+                                endGrooming.push(grooming[0]);
+                            } else {
+                                var lastItem = grooming[i - 1];
+                                var changeInLOC = thisItem[0] - lastItem[0];
+                                var changeInComplexity = thisItem[1] - lastItem[1];
+                                var user = thisItem[2];
 
-                    endGrooming.forEach(function (value) {
-                        // committed more than once
-                        if (user == value[2]) {
-                            found = true;
-                            value[0] += changeInLOC;
-                            value[1] += changeInComplexity;
-                        }
-                    });
+                                endGrooming.forEach(function (value) {
+                                    // committed more than once
+                                    if (user === value[2]) {
+                                        found = true;
+                                        value[0] += changeInLOC;
+                                        value[1] += changeInComplexity;
+                                    }
+                                });
 
-                    if (!found) {
-                        endGrooming.push(thisItem);
-                    }
-                }
+                                if (!found) {
+                                    endGrooming.push(thisItem);
+                                }
+                            }
 
-                i++;
-            });
+                            i++;
+                        });
+                    })
+                    .done(function () {
+                        groomed.addRows(endGrooming);
 
-            groomed.addRows(endGrooming);
-            /*
-            endGrooming.forEach(function (item) {
-                groomed.push([item[0], item[1]])
-            });*/
+                        var options = {
+                            title: 'LOC v complexity changes per user',
+                            hAxis: {title: 'Change in LOC'},
+                            vAxis: {title: 'Change in Complexity'},
+                            annotation: {0: {style: 'letter'}},
+                            annotations: {
+                                textStyle: {
+                                    bold: true,
+                                    color: '#000',
+                                    fontSize: 10
+                                }
+                            },
+                            displayAnnotations: true,
+                            legend: 'none',
+                            lineWidth: 0,
+                            pointSize: 5,
+                        };
 
-            console.log(groomed);
-
-            //var dataVis = new google.visualization.arrayToDataTable(groomed);
-            var options = {
-                title: 'LOC v complexity changes per user',
-                hAxis: {title: 'Change in LOC'},
-                vAxis: {title: 'Change in Complexity'},
-                annotation: { 0: {style: 'letter'}},
-                annotations: {
-                    textStyle: {
-                        bold: true,
-                        color: '#000',
-                        fontSize: 10
-                    }
-                },
-                displayAnnotations: true,
-                legend: 'none',
-                lineWidth: 0,
-                pointSize: 5,
-            };
-
-            // Instantiate and draw our chart, passing in some options.
-            var chart = new google.visualization.LineChart(document.getElementById('chart'));
-            chart.draw(groomed, options);
+                        // Instantiate and draw our chart, passing in some options.
+                        var chart = new google.visualization.LineChart(document.getElementById('chart'));
+                        chart.draw(groomed, options);
+                    })
         }
     </script>
 </head>

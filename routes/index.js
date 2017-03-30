@@ -172,6 +172,26 @@ router.get("/avg-graph/:repo", function (req, res) {
     });
 });
 
+router.get("/avg-graph-v-contributors/:repo", function (req, res) {
+    let repo = req.params["repo"];
+    let collection = req.params["collection"];
+
+    res.render("avg-complexity-v-contributors", {
+        repo: repo,
+        collection: collection
+    });
+});
+
+router.get("/cumulative-contributors/:repo", function (req, res) {
+    let repo = req.params["repo"];
+    let collection = req.params["collection"];
+
+    res.render("contributor-join", {
+        repo: repo,
+        collection: collection
+    });
+});
+
 router.get("/complexity-graph/:repo", function (req, res) {
     let repo = req.params["repo"];
     let collection = req.params["collection"];
@@ -284,7 +304,7 @@ router.get("/get-jobs", function (req, res) {
     let status = req.query["status"];
 
     mongo.connect('mongodb://localhost:27017/jobs', function (err, db_repo) {
-        if (status == "pipeline") {
+        if (status === "pipeline") {
             db_repo.collection("repos").find().toArray(function (err, data) {
                 let inProgress = [];
                 for (let repo in data)
@@ -294,7 +314,7 @@ router.get("/get-jobs", function (req, res) {
                 res.json(inProgress);
                 db_repo.close();
             });
-        } else if (status == "harvested") {
+        } else if (status === "harvested") {
             db_repo.collection("repos").find().toArray(function (err, data) {
                 let inProgress = [];
                 for (let repo in data)
@@ -304,7 +324,7 @@ router.get("/get-jobs", function (req, res) {
                 res.json(inProgress);
                 db_repo.close();
             });
-        } else if (status == "raw-data") {
+        } else if (status === "raw-data") {
             db_repo.collection("repos").find().toArray(function (err, data) {
                 res.json(data);
                 db_repo.close();
@@ -314,7 +334,12 @@ router.get("/get-jobs", function (req, res) {
 });
 
 router.get('/:account/:repo', function (req, res) {
-
+    console.log(req.params);
+    res.render('graphs', {
+        title: req.params["account"] + '/' + req.params["repo"],
+        repo: req.params["repo"],
+        account: req.params["account"]
+    });
 });
 
 module.exports = router;

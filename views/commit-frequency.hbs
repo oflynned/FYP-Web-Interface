@@ -34,7 +34,7 @@
                     item[0] = item[0].toDateString();
                 {{/compare}}
 
-                if (grooming.length == 0) {
+                if (grooming.length === 0) {
                     grooming.push(item);
                 } else {
                     grooming.forEach(function (commit) {

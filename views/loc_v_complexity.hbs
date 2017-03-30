@@ -7,54 +7,53 @@
         google.charts.setOnLoadCallback(drawChart);
 
         function drawChart() {
-            var data = $.ajax({
-                url: "http://localhost:3000/raw-data/{{repo}}",
-                dataType: "JSON",
-                async: false
-            }).responseText;
-
-            data = JSON.parse(data);
-
             var vis = new google.visualization.DataTable();
             vis.addColumn('date', 'Commit');
             vis.addColumn('number', "LOC");
             vis.addColumn('number', "Complexity");
 
-            var i = 0;
-            var groomed = [];
+            $.getJSON("http://localhost:3000/raw-data/{{repo}}")
+                    .done(function (data) {
+                        var i = 0;
+                        var groomed = [];
 
-            data.forEach(function (d) {
+                        data.forEach(function (d) {
 
-                var currLOC = 0;
-                var commit = new Date(d["commit_details"][0]["time"]);
-                var complexity = d["average_complexity"][0]["avg_complexity"];
+                            var currLOC = 0;
+                            var commit = new Date(d["commit_details"][0]["time"]);
+                            var complexity = d["average_complexity"][0]["avg_complexity"];
 
-                for (var item in d["files"])
-                    currLOC += d["files"][item]["loc"];
+                            for (var item in d["files"])
+                                currLOC += d["files"][item]["loc"];
 
-                groomed.push([commit, parseInt(currLOC), parseFloat(complexity)]);
+                            groomed.push([commit, parseInt(currLOC), parseFloat(complexity)]);
+                            i++;
+                        });
 
-                i++;
-            });
+                        groomed.sort(function (a, b) {
+                            return a[0] > b[0] ? 1 : -1;
+                        });
+                    })
+                    .done(function () {
+                        vis.addRows(groomed);
 
-            vis.addRows(groomed);
+                        var options = {
+                            title: 'LOC total v complexity over time for {{repo}}',
+                            legend: {position: 'bottom'},
+                            series: {
+                                0: {targetAxisIndex: 0},
+                                1: {targetAxisIndex: 1}
+                            },
+                            vAxes: {
+                                0: {title: "LOC (Lines)"},
+                                1: {title: "Complexity (Halstead)"}
+                            }
+                        };
 
-            var options = {
-                title: 'LOC total v complexity over time for {{repo}}',
-                legend: {position: 'bottom'},
-                series: {
-                    0: {targetAxisIndex: 0},
-                    1: {targetAxisIndex: 1}
-                },
-                vAxes: {
-                    0: {title: "LOC (Lines)"},
-                    1: {title: "Complexity (Halstead)"}
-                }
-            };
-
-            // Instantiate and draw our chart, passing in some options.
-            var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
-            chart.draw(vis, options);
+                        // Instantiate and draw our chart, passing in some options.
+                        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+                        chart.draw(vis, options);
+                    })
         }
     </script>
 </head>

@@ -7,27 +7,48 @@
         google.charts.setOnLoadCallback(drawChart);
 
         function drawChart() {
-            var groomed = [['Time', 'Complexity']];
+            var groomed = [['Time', 'Amount of Contributors']];
             $.getJSON("http://localhost:3000/avg-complexity-data/{{repo}}")
                     .done(function (data) {
-                        console.log(data.length + " json objects retrieved");
+                        console.log(data.length + " JSON objects retrieved");
                         return data;
                     })
                     .done(function (data) {
-
+                        var temp = [];
                         data.forEach(function (d) {
-                            var item = [new Date(d["commit_details"][0]["time"]), parseFloat(d["avg_complexity"])];
-                            groomed.push(item);
+                            d = d["commit_details"][0];
+                            var time = new Date(d["time"]);
+                            var author = d["author"];
+                            var found = false;
+
+                            if (temp.length === 0) {
+                                temp.push([time, 1, author]);
+                            } else {
+                                temp.forEach(function (contributor) {
+                                    if (author === contributor[2]) {
+                                        found = true;
+                                    }
+                                });
+
+                                if (!found) {
+                                    temp.push([time, temp[temp.length - 1][1] + 1, author]);
+                                }
+                            }
                         });
 
-                        groomed.sort(function (a, b) {
+                        temp.sort(function (a, b) {
                             return a[0] > b[0] ? 1 : -1;
                         });
+
+                        temp.forEach(function (d) {
+                            groomed.push([d[0], d[1]]);
+                            console.log(d);
+                        })
                     })
                     .done(function () {
                         var data = new google.visualization.arrayToDataTable(groomed);
                         var options = {
-                            title: 'Average Complexity for {{repo}}',
+                            title: 'Cumulative Contributor Join for {{repo}}',
                             legend: {position: 'bottom'}
                         };
 

@@ -1,0 +1,80 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages': ['corechart']});
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+            var groomed = [['Time', 'Complexity', 'Amount of Contributors']];
+            $.getJSON("http://localhost:3000/avg-complexity-data/{{repo}}")
+                    .done(function (data) {
+                        console.log(data.length + " JSON objects retrieved");
+                        return data;
+                    })
+                    .done(function (data) {
+                        data.forEach(function (d) {
+                            var item = [new Date(d["commit_details"][0]["time"]), parseFloat(d["avg_complexity"]), 0];
+                            groomed.push(item);
+                        });
+
+                        var temp = [];
+                        data.forEach(function (d) {
+                            d = d["commit_details"][0];
+                            var time = new Date(d["time"]);
+                            var author = d["author"];
+                            var found = false;
+
+                            if (temp.length === 0) {
+                                temp.push([time, 1, author]);
+                            } else {
+                                temp.forEach(function (contributor) {
+                                    if (author === contributor[2]) {
+                                        found = true;
+                                    }
+                                });
+
+                                if (!found) {
+                                    temp.push([time, temp[temp.length - 1][1] + 1, author]);
+                                } else {
+                                    temp.push([time, temp[temp.length - 1][1], author]);
+                                }
+                            }
+                        });
+
+                        for (var i = 1; i < groomed.length; i++)
+                            groomed[i][2] = temp[i - 1][1];
+
+                        groomed.sort(function (a, b) {
+                            return a[0] > b[0] ? 1 : -1;
+                        });
+                    })
+                    .done(function () {
+                        var data = new google.visualization.arrayToDataTable(groomed);
+                        var options = {
+                            title: 'Complexity v Amount of Contributors {{repo}}',
+                            legend: {position: 'bottom'},
+                            series: {
+                                0: {axis: 'Complexity'},
+                                1: {axis: 'Amount of Contributors'}
+                            },
+                            axes: {
+                                y: {
+                                    Complexity: {label: 'Complexity (Halstead)'},
+                                    LOC: {label: 'Contributors (Quantity)'}
+                                }
+                            }
+                        };
+
+                        // Instantiate and draw our chart, passing in some options.
+                        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+                        chart.draw(data, options);
+                    })
+        }
+    </script>
+</head>
+<body>
+<div id="curve_chart" style="width: 90vw; height: 90vh"></div>
+</body>
+</html>
