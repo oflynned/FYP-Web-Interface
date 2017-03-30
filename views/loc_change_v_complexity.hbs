@@ -12,10 +12,11 @@
             vis.addColumn('number', "LOC Change");
             vis.addColumn('number', "Complexity");
 
+            var groomed = [];
+
             $.getJSON("http://localhost:3000/raw-data/{{repo}}")
                     .done(function (data) {
                         var i = 0;
-                        var groomed = [];
 
                         data.forEach(function (d) {
 

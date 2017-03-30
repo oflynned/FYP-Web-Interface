@@ -7,6 +7,7 @@
         google.charts.setOnLoadCallback(drawChart);
 
         function drawChart() {
+            var groomed = [];
             var vis = new google.visualization.DataTable();
             vis.addColumn('date', 'Commit');
             vis.addColumn('number', "LOC");
@@ -15,7 +16,6 @@
             $.getJSON("http://localhost:3000/raw-data/{{repo}}")
                     .done(function (data) {
                         var i = 0;
-                        var groomed = [];
 
                         data.forEach(function (d) {
 

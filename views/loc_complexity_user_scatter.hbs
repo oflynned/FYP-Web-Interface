@@ -7,6 +7,7 @@
         google.charts.setOnLoadCallback(drawChart);
 
         function drawChart() {
+            var endGrooming = [];
             var groomed = new google.visualization.DataTable();
             groomed.addColumn("number", "Change in LOC");
             groomed.addColumn("number", "Change in Complexity");
@@ -15,7 +16,6 @@
             $.getJSON("http://localhost:3000/raw-data/{{repo}}")
                     .done(function (data) {
                         var grooming = [];
-                        var endGrooming = [];
 
                         var i = 0;
                         data.forEach(function (d) {

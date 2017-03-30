@@ -11,16 +11,15 @@
             $.getJSON("http://localhost:3000/raw-data/{{repo}}")
                     .done(function (data) {
                         var i = 0;
-                        data.forEach(function (d) {
 
+                        data.forEach(function (d) {
                             var currLOC = 0;
                             var commit = new Date(d["commit_details"][0]["time"]);
-
-                            // var user = d["commit_details"][0]["author"];
 
                             for (var item in d["files"])
                                 currLOC += d["files"][item]["loc"];
 
+                            console.log(currLOC);
                             if (i === 0) {
                                 groomed.push([commit, currLOC, currLOC]);
                             } else {

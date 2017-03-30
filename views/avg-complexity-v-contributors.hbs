@@ -7,7 +7,13 @@
         google.charts.setOnLoadCallback(drawChart);
 
         function drawChart() {
-            var groomed = [['Time', 'Complexity', 'Amount of Contributors']];
+            var vis = new google.visualization.DataTable();
+            vis.addColumn('date', 'Time');
+            vis.addColumn('number', "Complexity");
+            vis.addColumn('number', "Amount of Contributors");
+
+            var groomed = [];
+
             $.getJSON("http://localhost:3000/avg-complexity-data/{{repo}}")
                     .done(function (data) {
                         console.log(data.length + " JSON objects retrieved");
@@ -19,12 +25,28 @@
                             groomed.push(item);
                         });
 
+                        groomed.sort(function (a, b) {
+                            return new Date(b[0]) - new Date(a[0]);
+                        });
+
                         var temp = [];
+                        var tempCopyFromOrig = [];
+
                         data.forEach(function (d) {
                             d = d["commit_details"][0];
                             var time = new Date(d["time"]);
                             var author = d["author"];
+                            tempCopyFromOrig.push([time, author]);
+                        });
+
+                        tempCopyFromOrig.sort(function (a, b) {
+                            return new Date(b[0]) - new Date(a[0]);
+                        });
+
+                        tempCopyFromOrig.forEach(function (d) {
                             var found = false;
+                            var time = d[0];
+                            var author = d[1];
 
                             if (temp.length === 0) {
                                 temp.push([time, 1, author]);
@@ -43,33 +65,32 @@
                             }
                         });
 
-                        for (var i = 1; i < groomed.length; i++)
-                            groomed[i][2] = temp[i - 1][1];
-
                         groomed.sort(function (a, b) {
-                            return a[0] > b[0] ? 1 : -1;
+                            return new Date(a[0]) - new Date(b[0]);
                         });
+
+                        for (var i = 0; i < groomed.length; i++)
+                            groomed[i][2] = temp[i][1];
+
                     })
                     .done(function () {
-                        var data = new google.visualization.arrayToDataTable(groomed);
+                        vis.addRows(groomed);
                         var options = {
                             title: 'Complexity v Amount of Contributors {{repo}}',
                             legend: {position: 'bottom'},
                             series: {
-                                0: {axis: 'Complexity'},
-                                1: {axis: 'Amount of Contributors'}
+                                0: {targetAxisIndex: 0},
+                                1: {targetAxisIndex: 1}
                             },
-                            axes: {
-                                y: {
-                                    Complexity: {label: 'Complexity (Halstead)'},
-                                    LOC: {label: 'Contributors (Quantity)'}
-                                }
+                            vAxes: {
+                                0: {title: "Complexity (Halstead)"},
+                                1: {title: "Contributors (# People)"}
                             }
                         };
 
                         // Instantiate and draw our chart, passing in some options.
                         var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
-                        chart.draw(data, options);
+                        chart.draw(vis, options);
                     })
         }
     </script>

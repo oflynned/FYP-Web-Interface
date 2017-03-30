@@ -14,12 +14,24 @@
                         return data;
                     })
                     .done(function (data) {
+                        var tempCopyFromOrig = [];
+
                         var temp = [];
                         data.forEach(function (d) {
                             d = d["commit_details"][0];
                             var time = new Date(d["time"]);
                             var author = d["author"];
+                            tempCopyFromOrig.push([time, author]);
+                        });
+
+                        tempCopyFromOrig.sort(function (a, b) {
+                            return new Date(a[0]) - new Date(b[0]);
+                        });
+
+                        tempCopyFromOrig.forEach(function (d) {
                             var found = false;
+                            var time = d[0];
+                            var author = d[1];
 
                             if (temp.length === 0) {
                                 temp.push([time, 1, author]);
@@ -32,12 +44,14 @@
 
                                 if (!found) {
                                     temp.push([time, temp[temp.length - 1][1] + 1, author]);
+                                } else {
+                                    temp.push([time, temp[temp.length - 1][1], author]);
                                 }
                             }
                         });
 
                         temp.sort(function (a, b) {
-                            return a[0] > b[0] ? 1 : -1;
+                            return new Date(a[0]) - new Date(b[0]);
                         });
 
                         temp.forEach(function (d) {

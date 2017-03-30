@@ -59,10 +59,10 @@ function generateJob(job) {
         '<li><a href="/commit-frequency-graph/' + repo +'/date" target="_blank">Annual Commit Frequency</a></li>' +
         '<li><a href="/avg-graph/' + repo + '" target="_blank">Complexity Over Time</a></li>' +
         '<li><a href="/cumulative-contributors/' + repo + '" target="_blank">Cumulative Contributor Join</a></li>' +
-        '<li><a href="/avg-complexity-v-contributors/' + repo + '" target="_blank">Complexity v Contributor Join</a></li>' +
+        '<li><a href="/avg-graph-v-contributors/' + repo + '" target="_blank">Complexity v Contributor Join</a></li>' +
         '<li><a href="/loc-graph/' + repo + '" target="_blank">LOC v Churn</a></li>' +
-        '<li><a href="/complexity-change-loc-graph/' + repo + '" target="_blank">LOC v Complexity</a></li>' +
-        '<li><a href="/complexity-loc-graph/' + repo + '" target="_blank">LOC Change v Complexity</a></li>' +
+        '<li><a href="/complexity-loc-graph/' + repo + '" target="_blank">LOC v Complexity</a></li>' +
+        '<li><a href="/complexity-loc-change-graph/' + repo + '" target="_blank">LOC Change v Complexity</a></li>' +
         '</ul>' +
         '</div>';
 }
