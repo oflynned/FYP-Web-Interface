@@ -62,6 +62,7 @@
 
             var data = new google.visualization.arrayToDataTable(headings);
             var options = {
+                title: 'Commit Frequency for Repo ({{repo}})',
                 hAxis: {title: 'Time'},
                 vAxis: {minValue: 0, title: 'Commits'}
             };

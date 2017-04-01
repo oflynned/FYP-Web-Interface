@@ -22,12 +22,12 @@
                 var item = [d["author"], new Date(d["time"]), 1, 1, 1];
                 var found = false;
 
-                if (grooming.length == 0) {
+                if (grooming.length === 0) {
                     grooming.push(item);
                 } else {
                     grooming.forEach(function (commit) {
                         // committed more than once
-                        if (item[0] == commit[0]) {
+                        if (item[0] === commit[0]) {
                             found = true;
                             commit[2] += 1;
                             commit[4] = commit[3] = commit[2]
@@ -44,7 +44,7 @@
                 headings.push(grooming[item]);
 
             var options = {
-                title: "Join time of "+ (headings.length - 1) + " contributors for {{repo}} over " + data.length + " commits",
+                title: "Join Time of "+ (headings.length - 1) + " Contributors for Repo ({{repo}}/" + data.length + " commits)",
                 hAxis: {title: 'Time of Joining Repo'},
                 vAxis: {minValue: 0, title: 'Commits'},
                 bubble: {textStyle: {fontSize: 10}},

@@ -19,10 +19,11 @@ function generateRawDataJob(job) {
     let percentage = getPercentage(job["iteration"], job["maxIterations"]);
     let account = job["account"];
     let repo = job["repo"];
+    let url = "http://www.github.com/" + account + "/" + repo;
 
     return '<div id="' + job["job_id"] + '" class="container" style="margin-top: 2vh; margin-bottom: 2vh;">' +
         '<h1 class="title is-4">&lt;' +
-        '<a>' + job["account"] + '/' + job["repo"] + '</a>' +
+        '<a href="' + url + '" target="_blank">' + job["account"] + '/' + job["repo"] + '</a>' +
         '&gt;</h1>' +
         '<h2 class="subtitle is-6">' + percentage + '% ' +
         '(Commit: ' + job["iteration"] + '/' + job["maxIterations"] + ')' +
@@ -42,10 +43,12 @@ function generateRawDataJob(job) {
 function generateJob(job) {
     let percentage = getPercentage(job["iteration"], job["maxIterations"]);
     let repo = job["repo"];
+    let account = job["account"];
+    let url = "http://www.github.com/" + account + "/" + repo;
 
     return '<div id="' + job["job_id"] + '" class="container" style="margin-top: 2vh; margin-bottom: 2vh;">' +
         '<h1 class="title is-4">&lt;' +
-        '<a>' + job["account"] + '/' + job["repo"] + '</a>&gt;' +
+        '<a href="' + url + '" target="_blank">' + job["account"] + '/' + job["repo"] + '</a>&gt;' +
         '</h1>' +
         '<h2 class="subtitle is-6">' + percentage + '% ' +
         '(Commit: ' + job["iteration"] + '/' + job["maxIterations"] + ')' +
@@ -53,10 +56,10 @@ function generateJob(job) {
         '<progress class="progress is-primary" ' + 'value="' + parseInt(percentage) + '" max="100"></progress>' +
         '<ul>' +
         '<li><a href="/committers-graph/' + repo + '" target="_blank">Contributor Join-Time Graph</a></li>' +
-        '<li><a href="/commit-frequency-graph/' + repo +'/hour" target="_blank">Hourly Commit Frequency</a></li>' +
-        '<li><a href="/commit-frequency-graph/' + repo +'/day" target="_blank">Daily Commit Frequency</a></li>' +
-        '<li><a href="/commit-frequency-graph/' + repo +'/month" target="_blank">Monthly Commit Frequency</a></li>' +
-        '<li><a href="/commit-frequency-graph/' + repo +'/date" target="_blank">Annual Commit Frequency</a></li>' +
+        '<li><a href="/commit-frequency-graph/' + repo + '/hour" target="_blank">Hourly Commit Frequency</a></li>' +
+        '<li><a href="/commit-frequency-graph/' + repo + '/day" target="_blank">Daily Commit Frequency</a></li>' +
+        '<li><a href="/commit-frequency-graph/' + repo + '/month" target="_blank">Monthly Commit Frequency</a></li>' +
+        '<li><a href="/commit-frequency-graph/' + repo + '/date" target="_blank">Annual Commit Frequency</a></li>' +
         '<li><a href="/avg-graph/' + repo + '" target="_blank">Complexity Over Time</a></li>' +
         '<li><a href="/cumulative-contributors/' + repo + '" target="_blank">Cumulative Contributor Join</a></li>' +
         '<li><a href="/avg-graph-v-contributors/' + repo + '" target="_blank">Complexity v Contributor Join</a></li>' +

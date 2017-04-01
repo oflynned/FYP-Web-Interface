@@ -26,7 +26,7 @@
                         });
 
                         groomed.sort(function (a, b) {
-                            return new Date(b[0]) - new Date(a[0]);
+                            return new Date(a[0]) - new Date(b[0]);
                         });
 
                         var temp = [];
@@ -40,7 +40,7 @@
                         });
 
                         tempCopyFromOrig.sort(function (a, b) {
-                            return new Date(b[0]) - new Date(a[0]);
+                            return new Date(a[0]) - new Date(b[0]);
                         });
 
                         tempCopyFromOrig.forEach(function (d) {
@@ -76,7 +76,7 @@
                     .done(function () {
                         vis.addRows(groomed);
                         var options = {
-                            title: 'Complexity v Amount of Contributors {{repo}}',
+                            title: 'Complexity v Amount of Contributors for Repo ({{repo}})',
                             legend: {position: 'bottom'},
                             series: {
                                 0: {targetAxisIndex: 0},

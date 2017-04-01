@@ -8,7 +8,7 @@
 
         function drawChart() {
             var groomed = [['Time', 'Amount of Contributors']];
-            $.getJSON("http://localhost:3000/avg-complexity-data/{{repo}}")
+            $.getJSON("http://localhost:3000/committers-data/{{repo}}")
                     .done(function (data) {
                         console.log(data.length + " JSON objects retrieved");
                         return data;
@@ -18,7 +18,6 @@
 
                         var temp = [];
                         data.forEach(function (d) {
-                            d = d["commit_details"][0];
                             var time = new Date(d["time"]);
                             var author = d["author"];
                             tempCopyFromOrig.push([time, author]);
@@ -56,14 +55,15 @@
 
                         temp.forEach(function (d) {
                             groomed.push([d[0], d[1]]);
-                            console.log(d);
                         })
                     })
                     .done(function () {
                         var data = new google.visualization.arrayToDataTable(groomed);
                         var options = {
-                            title: 'Cumulative Contributor Join for {{repo}}',
-                            legend: {position: 'bottom'}
+                            title: 'Cumulative Contributor Join for Repo ({{repo}})',
+                            legend: {position: 'bottom'},
+                            hAxis: {title: 'Time of Joining Repo'},
+                            vAxis: {minValue: 0, title: 'Number of Contributors'}
                         };
 
                         // Instantiate and draw our chart, passing in some options.

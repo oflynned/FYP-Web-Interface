@@ -27,8 +27,10 @@
                     .done(function () {
                         var data = new google.visualization.arrayToDataTable(groomed);
                         var options = {
-                            title: 'Average Complexity for {{repo}}',
-                            legend: {position: 'bottom'}
+                            title: 'Average Complexity for Repo ({{repo}})',
+                            legend: {position: 'bottom'},
+                            hAxis: {title: 'Time'},
+                            vAxis: {title: 'Complexity (Halstead)'}
                         };
 
                         // Instantiate and draw our chart, passing in some options.

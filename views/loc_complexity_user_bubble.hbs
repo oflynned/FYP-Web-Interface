@@ -64,7 +64,7 @@
                     .done(function () {
                         var dataVis = new google.visualization.arrayToDataTable(groomed);
                         var options = {
-                            title: 'LOC v complexity changes per user',
+                            title: 'LOC v Complexity Changes per Contributor for Repo ({{repo}})',
                             hAxis: {title: 'Change in LOC'},
                             vAxis: {title: 'Change in Complexity'},
                             bubble: {textStyle: {fontSize: 10}},
