@@ -13,21 +13,14 @@
             vis.addColumn('number', "LOC");
             vis.addColumn('number', "Complexity");
 
-            $.getJSON("http://localhost:3000/raw-data/{{repo}}")
+            $.getJSON("http://localhost:3000/loc/{{repo}}")
                     .done(function (data) {
-                        var i = 0;
-
                         data.forEach(function (d) {
-
-                            var currLOC = 0;
-                            var commit = new Date(d["commit_details"][0]["time"]);
-                            var complexity = d["average_complexity"][0]["avg_complexity"];
-
-                            for (var item in d["files"])
-                                currLOC += d["files"][item]["loc"];
+                            var currLOC = d["loc"];
+                            var commit = new Date(d["time"]);
+                            var complexity = d["average_complexity"];
 
                             groomed.push([commit, parseInt(currLOC), parseFloat(complexity)]);
-                            i++;
                         });
 
                         groomed.sort(function (a, b) {

@@ -22,9 +22,14 @@
                             var currLOC = 0;
                             var complexity = d["average_complexity"][0]["avg_complexity"];
                             var user = d["commit_details"][0]["author"];
+                            var dataItem = d["files"];
 
-                            for (var item in d["files"])
-                                currLOC += d["files"][item]["loc"];
+                            for (var item in dataItem) {
+                                var loc = dataItem[item]["loc"];
+                                if(!isNaN(loc)) {
+                                    currLOC += loc;
+                                }
+                            }
 
                             grooming.push([parseInt(currLOC), parseFloat(complexity), user]);
                             i++;

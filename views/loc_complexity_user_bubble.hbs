@@ -18,9 +18,14 @@
                             var currLOC = 0;
                             var complexity = d["average_complexity"][0]["avg_complexity"];
                             var user = d["commit_details"][0]["author"];
+                            var dataItem = d["files"];
 
-                            for (var item in d["files"])
-                                currLOC += d["files"][item]["loc"];
+                            for (var item in dataItem) {
+                                var loc = dataItem[item]["loc"];
+                                if(!isNaN(loc)) {
+                                    currLOC += loc;
+                                }
+                            }
 
                             grooming.push([user, parseInt(currLOC), parseFloat(complexity)]);
                             i++;
@@ -58,7 +63,8 @@
                         endGrooming.forEach(function (item) {
                             // change in lines of code per change of complexity
                             var intensity = item[1] / item[2];
-                            groomed.push([item[0], item[1], item[2], intensity, intensity])
+                            groomed.push([item[0], item[1], item[2], intensity, intensity]);
+                            console.log(item);
                         });
                     })
                     .done(function () {

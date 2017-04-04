@@ -96,6 +96,52 @@ router.get("/raw-data/:repo", function (req, res) {
     });
 });
 
+router.get("/loc/:repo/", function (req, res) {
+    let repo = req.params["repo"];
+
+    mongo.connect('mongodb://localhost:27017/' + repo, function (err, db) {
+        let collection = db.collection("commits");
+        let groomedResults = [];
+        collection.find().toArray(function (err, results) {
+            // synchronous for-loop ... not the best idea but sure
+            let processLOC = function (i) {
+                if (i < results.length) {
+                    let collection = db.collection("raw_metrics");
+                    let head = results[i]["head"];
+
+                    collection.find({commit: head}).toArray(function (err, locResults) {
+                        if(err) db.close();
+
+                        let totLOC = 0;
+                        let items = locResults[0]["files"];
+                        for (let item in items) {
+                            let loc = items[item]["loc"];
+                            if (!isNaN(loc)) {
+                                totLOC += loc;
+                            }
+                        }
+                        results[i]["loc"] = totLOC;
+
+                        let collection = db.collection("average_complexity");
+                        collection.find({commit_head: head}).toArray(function (err, complexityResults) {
+                            if (err) db.close();
+
+                            results[i]["average_complexity"] = complexityResults[0]["avg_complexity"];
+                            groomedResults.push(results[i]);
+                            processLOC(i+1);
+                        });
+                    });
+                } else {
+                    res.json(groomedResults);
+                    db.close();
+                }
+            };
+
+            processLOC(0);
+        });
+    });
+});
+
 router.get("/raw-data/:repo/:commit", function (req, res) {
     mongo.connect('mongodb://localhost:27017/' + req.params["repo"], function (err, db) {
         db.collection("raw_metrics").aggregate([
