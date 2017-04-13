@@ -110,7 +110,7 @@ router.get("/loc/:repo/", function (req, res) {
                     let head = results[i]["head"];
 
                     collection.find({commit: head}).toArray(function (err, locResults) {
-                        if(err) db.close();
+                        if (err) db.close();
 
                         let totLOC = 0;
                         let items = locResults[0]["files"];
@@ -128,7 +128,7 @@ router.get("/loc/:repo/", function (req, res) {
 
                             results[i]["average_complexity"] = complexityResults[0]["avg_complexity"];
                             groomedResults.push(results[i]);
-                            processLOC(i+1);
+                            processLOC(i + 1);
                         });
                     });
                 } else {
@@ -140,6 +140,134 @@ router.get("/loc/:repo/", function (req, res) {
             processLOC(0);
         });
     });
+});
+
+router.post("/overall-avg-complexity-data", function (req, res) {
+    let repos = req.body["repos"];
+
+    // interval, repo complexity
+    let groomed = [["Interval (% max time)"]];
+
+    function getInterval(time, minTime, maxTime) {
+        let maxInterval = (maxTime - minTime) / maxTime;
+        return Math.abs((((time - minTime) / maxTime) / maxInterval) * 100);
+    }
+
+    function insertAt(array, index) {
+        let arrayToInsert = Array.prototype.splice.apply(arguments, [2]);
+        return insertArrayAt(array, index, arrayToInsert);
+    }
+
+    function insertArrayAt(array, index, arrayToInsert) {
+        Array.prototype.splice.apply(array, [index, 0].concat(arrayToInsert));
+        return array;
+    }
+
+    let processRepo = function (i) {
+        if (i < repos.length) {
+            mongo.connect('mongodb://localhost:27017/' + repos[i], function (err, db) {
+                db.collection("average_complexity").aggregate({
+                    $lookup: {
+                        from: "commits",
+                        localField: "commit_head",
+                        foreignField: "head",
+                        as: "commit_details"
+                    }
+                }, function (err, result) {
+                    let min = result[0];
+                    let max = result[result.length - 1];
+
+                    let minTime = new Date(min["commit_details"][0]["time"]).getTime();
+                    let maxTime = new Date(max["commit_details"][0]["time"]).getTime();
+
+                    groomed[0].push(repos[i]);
+
+                    // hack hack hack -- insertions were done backwards for keras and you-get
+                    if (i > 1) {
+                        let tempArray = result.slice();
+                        tempArray = tempArray.reverse();
+                        for (let j = 0; j < result.length; j++) {
+                            result[j]["avg_complexity"] = tempArray[j]["avg_complexity"];
+                        }
+                    }
+
+                    for (let item in result) {
+                        let complexity = parseFloat(result[item]["avg_complexity"]);
+                        let time = parseInt(new Date(result[item]["commit_details"][0]["time"]).getTime());
+                        let interval = parseFloat(getInterval(time, minTime, maxTime));
+
+                        if (i === 0) {
+                            groomed.push([interval, complexity])
+                        } else {
+                            // else find the slot to insert the new value and append to new row in groomed
+                            // holes in other cols should be filled with the nearest value for consistency
+                            for (let j = 1; j < groomed.length; j++) {
+                                if (interval === groomed[j][0]) {
+                                    // j is the correct key, no insertion needed, just append
+                                    // 100 is always max -- shouldn't have to worry about overflow?
+                                    groomed[j].push(complexity);
+                                } else if (interval > groomed[j][0] && interval < groomed[j + 1][0]) {
+                                    // add a new row, interval doesn't exist
+                                    // every other row has previous value from row - 1 to fill holes
+
+                                    let insertion = [];
+                                    insertion.push(interval);
+                                    for (let tempBlank = 0; tempBlank < i; tempBlank++) {
+                                        insertion.push(-1);
+                                    }
+
+                                    insertion.push(complexity);
+                                    insertArrayAt(groomed, j, [insertion]);
+
+                                    // only 1 insertion ever per iteration -- done with this loop
+                                    break;
+                                }
+                            }
+
+
+                            // fill in all the gaps with -1 for previous iterations NOT changed in last update
+                            for (let j = 0; j < groomed.length; j++) {
+                                if (groomed[j].length < i + 2) {
+                                    groomed[j].push(-1);
+                                }
+                            }
+                        }
+                    }
+
+                    groomed.sort(function (a, b) {
+                        return a[0] > b[0] ? 1 : -1;
+                    });
+
+                    // now fill in gaps of -1 with previous row value
+                    for (let r = 1; r < groomed.length; r++) {
+                        let row = groomed[r];
+                        for (let c = 1; c < row.length; c++) {
+                            // indicates a gap -- get previous row and copy as value
+                            if (row[c] === -1) {
+                                // set this (row, col) to be that value
+                                row[c] = groomed[r - 1][c];
+                            }
+                        }
+                    }
+
+                    for (let r in groomed) {
+                        while (groomed[r].length > i + 2)
+                            groomed[r].pop();
+
+                        // console.log(groomed[r])
+                    }
+
+                    db.close();
+                    processRepo(i + 1)
+                });
+            });
+
+        } else {
+            res.json(groomed);
+        }
+    };
+
+    processRepo(0);
 });
 
 router.get("/raw-data/:repo/:commit", function (req, res) {
@@ -246,6 +374,10 @@ router.get("/complexity-graph/:repo", function (req, res) {
         repo: repo,
         collection: collection
     });
+});
+
+router.get("/aggregate-complexity-graph", function (req, res) {
+    res.render("overall_complexity");
 });
 
 router.get("/loc-graph/:repo", function (req, res) {

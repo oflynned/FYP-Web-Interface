@@ -8,24 +8,16 @@
 
         function drawChart() {
             var groomed = [['User', 'Change in LOC', 'Change in complexity', 'Intensity', 'Size']];
-            $.getJSON("http://localhost:3000/raw-data/{{repo}}")
+            $.getJSON("http://localhost:3000/loc/{{repo}}")
                     .done(function (data) {
                         var grooming = [];
                         var endGrooming = [];
 
                         var i = 0;
                         data.forEach(function (d) {
-                            var currLOC = 0;
-                            var complexity = d["average_complexity"][0]["avg_complexity"];
-                            var user = d["commit_details"][0]["author"];
-                            var dataItem = d["files"];
-
-                            for (var item in dataItem) {
-                                var loc = dataItem[item]["loc"];
-                                if(!isNaN(loc)) {
-                                    currLOC += loc;
-                                }
-                            }
+                            var currLOC = d["loc"];
+                            var complexity = d["average_complexity"];
+                            var user = d["author"];
 
                             grooming.push([user, parseInt(currLOC), parseFloat(complexity)]);
                             i++;

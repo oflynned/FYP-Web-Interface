@@ -35,6 +35,7 @@ function generateRawDataJob(job) {
         '<li><a href="/committers-data/' + repo + '" target="_blank">Committers Data</a></li>' +
         '<li><a href="/maintainability-data/' + repo + '" target="_blank">Maintainability</a></li>' +
         '<li><a href="/repo-data/' + repo + '" target="_blank">Repo Data</a></li>' +
+        '<li><a href="/loc/' + repo + '" target="_blank">LOC Curated</a></li>' +
         '<li><a href="/raw-data/' + repo + '" target="_blank">LOC</a></li>' +
         '</ul>' +
         '</div>';
@@ -66,6 +67,7 @@ function generateJob(job) {
         '<li><a href="/loc-graph/' + repo + '" target="_blank">LOC v Churn</a></li>' +
         '<li><a href="/complexity-loc-graph/' + repo + '" target="_blank">LOC v Complexity</a></li>' +
         '<li><a href="/complexity-loc-change-graph/' + repo + '" target="_blank">LOC Change v Complexity</a></li>' +
+        '<li><a href="/complexity-loc-bubble-graph/' + repo + '" target="_blank">LOC Change v Complexity Per Contributor</a></li>' +
         '</ul>' +
         '</div>';
 }

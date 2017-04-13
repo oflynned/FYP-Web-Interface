@@ -7,32 +7,30 @@
         google.charts.setOnLoadCallback(drawChart);
 
         function drawChart() {
-            var data = $.ajax({
-                url: "http://localhost:3000/cyclomatic-complexity-data/{{repo}}",
-                dataType: "JSON",
-                async: false
-            }).responseText;
+            $.getJSON("http://localhost:3000/cyclomatic-complexity-data/{{repo}}")
+                    .done(function (data) {
+                        data = JSON.parse(data);
+                        var groomed = [['Time', 'Complexity']];
 
-            data = JSON.parse(data);
-            var groomed = [['Time', 'Complexity']];
+                        data.forEach(function (d) {
+                            var item = [new Date(d["commit_details"][0]["time"]), parseFloat(d["avg_complexity"])];
+                            groomed.push(item);
+                        });
 
-            data.forEach(function (d) {
-                var item = [new Date(d["commit_details"][0]["time"]), parseFloat(d["avg_complexity"])];
-                groomed.push(item);
-            });
+                        console.log(groomed);
+                        return groomed;
+                    })
+                    .done(function(groomed) {
+                        var data = new google.visualization.arrayToDataTable(groomed);
+                        var options = {
+                            title: 'Average Complexity over Time for Repo ({{repo}})',
+                            curveType: 'function',
+                            legend: {position: 'bottom'}
+                        };
 
-            console.log(groomed);
-
-            var data = new google.visualization.arrayToDataTable(groomed);
-            var options = {
-                title: 'Average Complexity over Time for Repo ({{repo}})',
-                curveType: 'function',
-                legend: {position: 'bottom'}
-            };
-
-            // Instantiate and draw our chart, passing in some options.
-            var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
-            chart.draw(data, options);
+                        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+                        chart.draw(data, options);
+                    });
         }
     </script>
 </head>
