@@ -1,0 +1,78 @@
+<html>
+<head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', {'packages': ['corechart']});
+        google.charts.setOnLoadCallback(loadChart);
+
+        function loadChart() {
+            var headings = [['ID', 'Join Time', 'Commits', 'Temperature', 'Size']];
+            var grooming = [];
+            var dataLength;
+
+            $.getJSON("http://localhost:3000/committers-data/{{repo}}")
+                    .done(function (data) {
+                        console.log(data.length + " JSON objects retrieved");
+                        return data;
+                    })
+                    .done(function (data) {
+                        dataLength = data.length;
+
+                        data.forEach(function (d) {
+                            var item = [d["author"], new Date(d["time"]), 1, 1, 1];
+                            var found = false;
+
+                            if (grooming.length === 0) {
+                                grooming.push(item);
+                            } else {
+                                grooming.forEach(function (commit) {
+                                    // committed more than once
+                                    if (item[0] === commit[0]) {
+                                        found = true;
+                                        commit[2] += 1;
+                                        commit[4] = commit[3] = commit[2]
+                                    }
+                                });
+
+                                if (!found) {
+                                    grooming.push(item);
+                                }
+                            }
+                        });
+
+                        for (var i = 0; i < grooming.length; i++) {
+                            console.log(grooming[i]);
+                            grooming[i][2] = grooming[i][2] / new Date(grooming[i][2]).getTime();
+                        }
+
+                        for (var item in grooming)
+                            headings.push(grooming[item]);
+                    })
+                    .done(function () {
+                        var options = {
+                            title: "Join Time of " + (headings.length - 1) + " Contributors for Repo ({{repo}}/" + dataLength + " commits)",
+                            hAxis: {title: 'Time of Joining Repo'},
+                            vAxis: {minValue: 0, title: 'Commits'},
+                            bubble: {textStyle: {fontSize: 10}},
+                            colorAxis: {colors: ['red', 'green']},
+                            animation: {
+                                duration: 2000,
+                                easing: 'out',
+                                startup: true
+                            }
+                        };
+
+                        var data = new google.visualization.arrayToDataTable(headings);
+
+                        var chart = new google.visualization.BubbleChart(document.getElementById('series_chart_div'));
+                        chart.draw(data, options);
+
+                    });
+        }
+    </script>
+</head>
+<body>
+<div id="series_chart_div" style="width: 90vw; height: 90vh"></div>
+</body>
+</html>

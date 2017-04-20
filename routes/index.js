@@ -163,6 +163,15 @@ router.post("/overall-avg-complexity-data", function (req, res) {
         return array;
     }
 
+    function getMaxComplexity(array) {
+        let max = 0;
+        for (let i = 0; i < array.length; i++) {
+            if (array[i]["avg_complexity"] > max) max = array[i]["avg_complexity"];
+        }
+
+        return max;
+    }
+
     let processRepo = function (i) {
         if (i < repos.length) {
             mongo.connect('mongodb://localhost:27017/' + repos[i], function (err, db) {
@@ -182,13 +191,40 @@ router.post("/overall-avg-complexity-data", function (req, res) {
 
                     groomed[0].push(repos[i]);
 
-                    // hack hack hack -- insertions were done backwards for keras and you-get
-                    if (i > 1) {
-                        let tempArray = result.slice();
-                        tempArray = tempArray.reverse();
+                    if (i === 2 || i === 6 || i === 7) {
+                        // invert keras & treq
+
+                        let maxComplexity = getMaxComplexity(result);
                         for (let j = 0; j < result.length; j++) {
-                            result[j]["avg_complexity"] = tempArray[j]["avg_complexity"];
+                            let complexity = result[j]["avg_complexity"];
+                            result[j]["avg_complexity"] = (maxComplexity - complexity) + 2;
                         }
+                    } else if (i === 5 || i === 8) {
+                        // crop flask
+
+                        let isFirstTriggered = false;
+                        let triggerIndex = undefined;
+
+                        for (let j = 0; j < result.length; j++) {
+                            if(i === 5) {
+                                let year = new Date(result[j]["commit_details"][0]["time"]).getFullYear();
+                                if (year >= 2013 && !isFirstTriggered) {
+                                    triggerIndex = j;
+                                    isFirstTriggered = true;
+                                    maxTime = new Date(result[j]["commit_details"][0]["time"]);
+                                }
+                            } else if(i === 8) {
+                                let year = new Date(result[j]["commit_details"][0]["time"]).getFullYear();
+                                let month = new Date(result[j]["commit_details"][0]["time"]).getMonth();
+                                if (year >= 2016 && month > 3 && !isFirstTriggered) {
+                                    triggerIndex = j;
+                                    isFirstTriggered = true;
+                                    maxTime = new Date(result[j]["commit_details"][0]["time"]);
+                                }
+                            }
+                        }
+
+                        result = result.slice(0, triggerIndex);
                     }
 
                     for (let item in result) {
@@ -361,6 +397,16 @@ router.get("/cumulative-contributors/:repo", function (req, res) {
     let collection = req.params["collection"];
 
     res.render("contributor-join", {
+        repo: repo,
+        collection: collection
+    });
+});
+
+router.get("/cumulative-contributors-normalised/:repo", function (req, res) {
+    let repo = req.params["repo"];
+    let collection = req.params["collection"];
+
+    res.render("committers-normalised", {
         repo: repo,
         collection: collection
     });

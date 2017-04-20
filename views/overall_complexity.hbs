@@ -6,7 +6,15 @@
         google.charts.load('current', {'packages': ['corechart']});
         google.charts.setOnLoadCallback(drawChart);
 
-        var repos = {repos: ["cryptography", "tornado", "keras", "you-get"]};
+        // eve needs max - min
+        // pyrebase needs to be deleted form oct 2016 on
+        // kivent needs july 2016 deleted on
+        // keras needs max - min
+        // flask need 2014 onwards deleted
+        // treq needs max - min
+
+        var repos = {repos: ["cryptography", "tornado", "keras", "tweepy", "kivent", "flask", "treq", "eve", "Pyrebase"]};
+        //var repos = {repos: ["Pyrebase"]};
 
         function drawChart() {
             $.ajax({

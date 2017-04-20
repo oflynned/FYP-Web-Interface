@@ -7,10 +7,9 @@
         google.charts.setOnLoadCallback(drawChart);
 
         function drawChart() {
-            var groomed = [['Time', 'Amount of Contributors']];
+            var groomed = [['Time', 'Number of Contributors']];
             $.getJSON("http://localhost:3000/committers-data/{{repo}}")
                     .done(function (data) {
-                        console.log(data.length + " JSON objects retrieved");
                         return data;
                     })
                     .done(function (data) {
