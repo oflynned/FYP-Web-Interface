@@ -142,6 +142,40 @@ router.get("/loc/:repo/", function (req, res) {
     });
 });
 
+function debugGroom(result, maxTime) {
+    if (i === 2 || i === 6 || i === 7) {
+        let maxComplexity = getMaxComplexity(result);
+        for (let j = 0; j < result.length; j++) {
+            let complexity = result[j]["avg_complexity"];
+            result[j]["avg_complexity"] = (maxComplexity - complexity) + 2;
+        }
+    } else if (i === 5 || i === 8) {
+        let isFirstTriggered = false;
+        let triggerIndex = undefined;
+
+        for (let j = 0; j < result.length; j++) {
+            if(i === 5) {
+                let year = new Date(result[j]["commit_details"][0]["time"]).getFullYear();
+                if (year >= 2013 && !isFirstTriggered) {
+                    triggerIndex = j;
+                    isFirstTriggered = true;
+                    maxTime = new Date(result[j]["commit_details"][0]["time"]);
+                }
+            } else if(i === 8) {
+                let year = new Date(result[j]["commit_details"][0]["time"]).getFullYear();
+                let month = new Date(result[j]["commit_details"][0]["time"]).getMonth();
+                if (year >= 2016 && month > 3 && !isFirstTriggered) {
+                    triggerIndex = j;
+                    isFirstTriggered = true;
+                    maxTime = new Date(result[j]["commit_details"][0]["time"]);
+                }
+            }
+        }
+
+        result = result.slice(0, triggerIndex);
+    }
+}
+
 router.post("/overall-avg-complexity-data", function (req, res) {
     let repos = req.body["repos"];
 
@@ -191,41 +225,7 @@ router.post("/overall-avg-complexity-data", function (req, res) {
 
                     groomed[0].push(repos[i]);
 
-                    if (i === 2 || i === 6 || i === 7) {
-                        // invert keras & treq
-
-                        let maxComplexity = getMaxComplexity(result);
-                        for (let j = 0; j < result.length; j++) {
-                            let complexity = result[j]["avg_complexity"];
-                            result[j]["avg_complexity"] = (maxComplexity - complexity) + 2;
-                        }
-                    } else if (i === 5 || i === 8) {
-                        // crop flask
-
-                        let isFirstTriggered = false;
-                        let triggerIndex = undefined;
-
-                        for (let j = 0; j < result.length; j++) {
-                            if(i === 5) {
-                                let year = new Date(result[j]["commit_details"][0]["time"]).getFullYear();
-                                if (year >= 2013 && !isFirstTriggered) {
-                                    triggerIndex = j;
-                                    isFirstTriggered = true;
-                                    maxTime = new Date(result[j]["commit_details"][0]["time"]);
-                                }
-                            } else if(i === 8) {
-                                let year = new Date(result[j]["commit_details"][0]["time"]).getFullYear();
-                                let month = new Date(result[j]["commit_details"][0]["time"]).getMonth();
-                                if (year >= 2016 && month > 3 && !isFirstTriggered) {
-                                    triggerIndex = j;
-                                    isFirstTriggered = true;
-                                    maxTime = new Date(result[j]["commit_details"][0]["time"]);
-                                }
-                            }
-                        }
-
-                        result = result.slice(0, triggerIndex);
-                    }
+                    //debugGroom();
 
                     for (let item in result) {
                         let complexity = parseFloat(result[item]["avg_complexity"]);
